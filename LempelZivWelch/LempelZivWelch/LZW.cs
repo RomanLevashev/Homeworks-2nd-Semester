@@ -22,8 +22,13 @@
         /// The compressed data is written to a new file with the same name and a ".zipped" extension.
         /// </summary>
         /// <param name="inputPath">The path of the file to be compressed.</param>
-        public static void CompressFile(string inputPath)
+        /// <returns>
+        /// The compression ratio, which is the ratio of the original file size to the compressed file size.
+        /// </returns>
+        public static long CompressFile(string inputPath)
         {
+            FileInfo fileInfo = new FileInfo(inputPath);
+            long inputSize = fileInfo.Length;
             string outputPath = inputPath + ".zipped";
             int bufferSize = 13;
 
@@ -32,6 +37,11 @@
             {
                 EncodeBytes(inputFileStream, outputFileStream, bufferSize);
             }
+
+            FileInfo encodeFileInfo = new FileInfo(outputPath);
+            long outputSize = encodeFileInfo.Length;
+
+            return inputSize / outputSize;
         }
 
         /// <summary>
