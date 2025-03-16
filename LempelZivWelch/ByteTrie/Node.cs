@@ -7,27 +7,29 @@
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Представляет узел дерева Trie.
+    /// Represents a node in the trie data structure.
     /// </summary>
+    /// <param name="value">The byte value associated with the node.</param>
     public class Node(byte value)
     {
         /// <summary>
-        /// Символ, хранящийся в узле.
+        /// Gets the byte value associated with this node.
         /// </summary>
         public byte Value { get; } = value;
 
         /// <summary>
-        /// Дочерние узлы текущего узла.
+        /// Gets the dictionary of child nodes, where the key is the byte value.
         /// </summary>
         public Dictionary<byte, Node> Children { get; } = [];
 
         /// <summary>
-        /// Является ли узел терминальным (оканчивается ли на нем слово).
+        /// Gets or sets a value indicating whether this node is a terminal node in the Trie.
+        /// A terminal node marks the end of a valid sequence.
         /// </summary>
         public bool IsTerminal { get; set; }
 
         /// <summary>
-        /// Индекс последовательности.
+        /// Gets or sets the index of this node in the Trie.
         /// </summary>
         public uint Index { get; set; }
     }

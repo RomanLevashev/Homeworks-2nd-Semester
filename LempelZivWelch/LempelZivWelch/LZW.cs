@@ -12,8 +12,16 @@
     using System.Threading.Tasks;
     using ByteTrie;
 
+    /// <summary>
+    /// Implements the LZW compression algorithm for encoding and decoding data.
+    /// </summary>
     public class LZW
     {
+        /// <summary>
+        /// Compresses the specified file using the LZW algorithm.
+        /// The compressed data is written to a new file with the same name and a ".zipped" extension.
+        /// </summary>
+        /// <param name="inputPath">The path of the file to be compressed.</param>
         public static void CompressFile(string inputPath)
         {
             string outputPath = inputPath + ".zipped";
@@ -26,6 +34,11 @@
             }
         }
 
+        /// <summary>
+        /// Decompresses the specified LZW-compressed file.
+        /// The decompressed data is written to a new file with the original extension before compression.
+        /// </summary>
+        /// <param name="inputPath">The path of the file to be decompressed.</param>
         public static void DecompressFile(string inputPath)
         {
             string outputPath = inputPath[..^7];
@@ -232,6 +245,8 @@
 
                 AddBitsToBuffer(ByteToBits(inputBuffer[currentByteIndex++]), bitBuffer);
             }
+
+
             return isRefill;
         }
 

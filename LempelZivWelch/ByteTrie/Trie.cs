@@ -18,30 +18,30 @@
     public class Trie
     {
         /// <summary>
-        /// Корневой узел бора, имеет в себе значение 0, все первые байты последовательностей - его потомки.
+        /// Gets the root node of the trie.
         /// </summary>
         public Node Root { get;  } = new Node(0);
 
         /// <summary>
-        /// Количество последовательностей в боре.
+        /// Gets the number of sequences stored in the trie.
         /// </summary>
         public uint Size { get; private set;  } = 0;
 
         /// <summary>
-        /// Добавляет байт в бор.
+        /// Adds a single byte as a sequence to the trie.
         /// </summary>
-        /// <param name="element">Последовательность байтов.</param>
-        /// <returns>True, если слово добавлено, иначе false.</returns>
-        public (Node terminal, bool isSuccess) Add(byte element)
+        /// <param name="element">The byte to add.</param>
+        /// <returns>A tuple containing the terminal node and a boolean indicating success.</returns>
+        public (Node? terminal, bool isSuccess) Add(byte element)
         {
             return this.Add([element]);
         }
 
         /// <summary>
-        /// Добавляет последовательность байтов в бор.
+        /// Adds a byte sequence to the trie.
         /// </summary>
-        /// <param name="element">Последовательность байтов.</param>
-        /// <returns>True, если слово добавлено, иначе false.</returns>
+        /// <param name="element">The byte array representing the sequence to add.</param>
+        /// <returns>A tuple containing the terminal node if the sequence was added successfully, otherwise null, and a boolean indicating success.</returns>
         public (Node? terminal, bool isSuccess) Add(byte[] element)
         {
             if (element == null || element.Length == 0)
@@ -64,17 +64,17 @@
                 return (endPrefixNode, false);
             }
 
-            endPrefixNode.Children[element[nextPosition]] = CreateSuffix(element[nextPosition..]);
+            endPrefixNode.Children[element[nextPosition]] = this.CreateSuffix(element[nextPosition..]);
             this.Size++;
 
             return (endPrefixNode, true);
         }
 
         /// <summary>
-        /// Проверяет, содержится ли последовательность байтов в боре.
+        /// Checks if the given byte sequence exists in the trie.
         /// </summary>
-        /// <param name="element">Последовательность байтов для поиска.</param>
-        /// <returns>True, если последовательность байтов найдена, иначе false.</returns>
+        /// <param name="element">The byte array representing the sequence to check.</param>
+        /// <returns>True if the sequence exists in the trie, otherwise false.</returns>
         public bool Contains(byte[] element)
         {
             var (endPrefixNode, nextPosition) = this.FindLongestPrefix(element);
@@ -83,18 +83,23 @@
         }
 
         /// <summary>
-        /// Проверяет, содержится ли байт в боре.
+        /// Checks if the given byte element exists in the trie.
         /// </summary>
-        /// <param name="element">Байт для поиска</param>
-        /// <returns></returns>
+        /// <param name="element">The byte element to check for existence in the trie.</param>
+        /// <returns>True if the byte element exists in the trie, otherwise false.</returns>
         public bool Contains(byte element)
         {
             return this.Contains([element]);
         }
 
+        /// <summary>
+        /// Retrieves the index of the given byte sequence in the trie.
+        /// </summary>
+        /// <param name="element">The byte sequence for which to get the index.</param>
+        /// <returns>The index of the sequence in the trie, or Argument Exception if the sequence is not found.</returns>
         public uint GetIndex(byte[] element)
         {
-            (Node sequenceEnd, int nextPosition) = FindLongestPrefix(element);
+            (Node sequenceEnd, int nextPosition) = this.FindLongestPrefix(element);
             if (nextPosition != element.Length)
             {
                 throw new ArgumentException("The element is not present in trie");
