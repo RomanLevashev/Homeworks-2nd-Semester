@@ -1,5 +1,6 @@
 ﻿namespace CalculatorTests
 {
+    using System.Globalization;
     using CalculatorLogic;
 
     /// <summary>
@@ -38,7 +39,7 @@
                 Assert.IsTrue(tempResult.isChanged);
             }
 
-            Assert.AreEqual(double.Parse(calculator.DisplayResult), 9.6);
+            Assert.AreEqual(double.Parse(calculator.DisplayResult, new CultureInfo("ru-RU")), 9.6);
         }
 
         /// <summary>
@@ -88,7 +89,7 @@
                 Assert.IsTrue(tempResult.isChanged);
             }
 
-            Assert.AreEqual(double.Parse(calculator.DisplayResult), 47.95);
+            Assert.AreEqual(double.Parse(calculator.DisplayResult, new CultureInfo("ru-RU")), 47.95);
         }
 
         /// <summary>

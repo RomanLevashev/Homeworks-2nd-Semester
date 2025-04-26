@@ -1,5 +1,6 @@
 ﻿namespace CalculatorLogic
 {
+    using System.Globalization;
     using System.Numerics;
     using System.Reflection.Metadata.Ecma335;
     using System.Text;
@@ -151,11 +152,11 @@
             if (!this.isDoubleMode)
             {
                 BigInteger result = (BigInteger)currentResult;
-                this.DisplayResult = result.ToString();
+                this.DisplayResult = result.ToString(new CultureInfo("ru-RU"));
                 return;
             }
 
-            this.DisplayResult = currentResult.ToString();
+            this.DisplayResult = currentResult.ToString(new CultureInfo("ru-RU"));
         }
     }
 }
