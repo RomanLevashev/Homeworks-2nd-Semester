@@ -104,7 +104,7 @@
 
             foreach (string token in tokens)
             {
-                if (double.TryParse(token, out double temp))
+                if (double.TryParse(token, new CultureInfo("ru-RU"), out double temp))
                 {
                     if (currentResult == 0 && previousOperator == '\0')
                     {
