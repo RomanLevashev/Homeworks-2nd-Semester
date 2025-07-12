@@ -1,25 +1,32 @@
-﻿namespace BurrowsWheelerTransform;
+﻿// <copyright file="BurrowsWheeller.cs" company="Roman Levashev">
+// Copyright (c) Roman Levashev. All rights reserved.
+// Licensed under the MIT License.
+// </copyright>
+
+namespace BurrowsWheelerTransform;
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 /// <summary>
-/// Класс, реализующий преобразование Барроуза-Уилера.
+/// Provides methods for encoding and decoding text using the Burrows-Wheeler Transform algorithm.
 /// </summary>
 public static class BurrowsWheeller
 {
     /// <summary>
-    /// Выполняет преобразование Барроуза-Уилера над входной строкой.
+    /// Performs Burrows-Wheeler Transform on the input string.
     /// </summary>
-    /// <param name="input">Входная строка.</param>
-    /// <returns>Кортеж, содержащий преобразованную строку и позицию исходной строки (Индексация с нуля).</returns>
-    public static (string transformed, int position) Transform(string input)
+    /// <param name="input">The string to transform. Cannot be null or empty.</param>
+    /// <returns>
+    /// A tuple containing:
+    /// <list type="bullet">
+    /// <item><description>Transformed - The BWT-transformed string</description></item>
+    /// <item><description>Position - The zero-based index of original string in sorted rotations table</description></item>
+    /// </list>
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown when input is null or empty.</exception>
+    public static (string Transformed, int Position) Transform(string input)
     {
         if (string.IsNullOrEmpty(input))
         {
@@ -52,25 +59,32 @@ public static class BurrowsWheeller
     }
 
     /// <summary>
-    /// Выполняет обратное преобразование Барроуза-Уилера.
+    /// Reverses the Burrows-Wheeler Transform to reconstruct the original string.
     /// </summary>
-    /// <param name="transformed">Преобразованная строка.</param>
-    /// <param name="position">Позиция оригинальной строки в отсортированной таблице сдвигов (индексация с нуля).</param>
-    /// <returns>Исходная строка.</returns>
+    /// <param name="transformed">The BWT-transformed string to process. Cannot be null or empty.</param>
+    /// <param name="position">The zero-based index of the original string in the sorted rotations table (range: 0 to transformed.Length - 1).</param>
+    /// <returns>The original string before transformation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when transformed string is null or empty.</exception>
+    /// <exception cref="IndexOutOfRangeException"> Thrown when: position is outside valid range.</exception>
     public static string InverseTransform(string transformed, int position)
     {
         if (string.IsNullOrEmpty(transformed))
         {
-            throw new ArgumentNullException("input");
+            throw new ArgumentNullException(nameof(transformed));
         }
 
-        int[] countBefore = new int[transformed.Length];
+        if (position >= transformed.Length || position < 0)
+        {
+            throw new IndexOutOfRangeException(nameof(position));
+        }
+
+        var countBefore = new int[transformed.Length];
         Dictionary<char, int> charCurrentCount = [];
 
         for (int i = 0; i < transformed.Length; ++i)
         {
             char current = transformed[i];
-            int count = 0;
+            var count = 0;
             if (charCurrentCount.ContainsKey(current))
             {
                 count = charCurrentCount[current]++;

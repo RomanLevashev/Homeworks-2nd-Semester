@@ -1,4 +1,9 @@
-﻿using System.Text;
+﻿// <copyright file="Program.cs" company="Roman Levashev">
+// Copyright (c) Roman Levashev. All rights reserved.
+// Licensed under the MIT License.
+// </copyright>
+
+using System.Text;
 using BurrowsWheelerTransform;
 
 Options choice = Options.Transform;
@@ -37,7 +42,7 @@ while (choice != Options.Exit)
     {
         Console.WriteLine("Введите строку, которую хотите преобразовать");
         string? str = Console.ReadLine();
-        if (str == null || str == string.Empty)
+        if (string.IsNullOrEmpty(str))
         {
             Console.WriteLine("Некорректный ввод!");
             continue;
@@ -51,7 +56,7 @@ while (choice != Options.Exit)
     {
         Console.WriteLine("Введите строку, которую нужно вернуть к исходному виду");
         string? str = Console.ReadLine();
-        if (str == null || str == string.Empty)
+        if (string.IsNullOrEmpty(str))
         {
             Console.WriteLine("Некорректный ввод!");
             continue;
