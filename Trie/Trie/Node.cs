@@ -1,29 +1,29 @@
-﻿namespace Trie
+﻿// <copyright file="Node.cs" company="Roman Levashev">
+// Copyright (c) Roman Levashev. All rights reserved.
+// Licensed under the MIT License.
+// </copyright>
+
+namespace Trie;
+
+using System.Collections.Generic;
+
+/// <summary>
+/// Represents a node in a Trie (prefix tree) data structure.
+/// </summary>
+public class Node(char value)
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
+    /// <summary>
+    /// Gets the character value stored in this node.
+    /// </summary>
+    public char Value { get; } = value;
 
     /// <summary>
-    /// Представляет узел дерева Trie.
+    /// Gets the collection of child nodes.
     /// </summary>
-    public class Node(char value)
-    {
-        /// <summary>
-        /// Символ, хранящийся в узле.
-        /// </summary>
-        public char Value { get; } = value;
+    public Dictionary<char, Node> Children { get; } = [];
 
-        /// <summary>
-        /// Дочерние узлы текущего узла.
-        /// </summary>
-        public Dictionary<char, Node> Children { get; } = [];
-
-        /// <summary>
-        /// Является ли узел терминальным (оканчивается ли на нем слово).
-        /// </summary>
-        public bool IsTerminal { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets a value indicating whether this node represents the end of a complete word.
+    /// </summary>
+    public bool IsTerminal { get; set; }
 }
