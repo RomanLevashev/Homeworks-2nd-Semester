@@ -1,370 +1,165 @@
-﻿namespace LempelZivWelch
+﻿// <copyright file="LZW.cs" company="Roman Levashev">
+// Copyright (c) Roman Levashev. All rights reserved.
+// Licensed under the MIT License.
+// </copyright>
+
+namespace LempelZivWelch;
+
+using ByteTrie;
+
+/// <summary>
+/// Implements the LZW compression algorithm for encoding and decoding data.
+/// </summary>
+public class LZW
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
-    using System.Dynamic;
-    using System.Linq;
-    using System.Runtime.InteropServices;
-    using System.Text;
-    using System.Text.Json.Serialization.Metadata;
-    using System.Threading.Tasks;
-    using ByteTrie;
+    /// <summary>
+    /// Compresses the specified file using the LZW algorithm.
+    /// The compressed data is written to a new file with the same name and a ".zipped" extension.
+    /// </summary>
+    /// <param name="inputPath">The path of the file to be compressed.</param>
+    /// <returns>
+    /// The compression ratio, which is the ratio of the original file size to the compressed file size.
+    /// </returns>
+    public static long CompressFile(string inputPath)
+    {
+        FileInfo fileInfo = new FileInfo(inputPath);
+        long inputSize = fileInfo.Length;
+        string outputPath = inputPath + ".zipped";
+        int bufferSize = 4 * (int)Math.Pow(2, 20);
+
+        using (FileStream inputFileStream = new FileStream(inputPath, FileMode.Open, FileAccess.Read))
+        using (FileStream outputFileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+        {
+            EncodeBytes(inputFileStream, outputFileStream, bufferSize);
+        }
+
+        FileInfo encodeFileInfo = new FileInfo(outputPath);
+        long outputSize = encodeFileInfo.Length;
+
+        return inputSize / outputSize;
+    }
 
     /// <summary>
-    /// Implements the LZW compression algorithm for encoding and decoding data.
+    /// Decompresses the specified LZW-compressed file.
+    /// The decompressed data is written to a new file with the original extension before compression.
     /// </summary>
-    public class LZW
+    /// <param name="inputPath">The path of the file to be decompressed.</param>
+    public static void DecompressFile(string inputPath)
     {
-        /// <summary>
-        /// Compresses the specified file using the LZW algorithm.
-        /// The compressed data is written to a new file with the same name and a ".zipped" extension.
-        /// </summary>
-        /// <param name="inputPath">The path of the file to be compressed.</param>
-        /// <returns>
-        /// The compression ratio, which is the ratio of the original file size to the compressed file size.
-        /// </returns>
-        public static long CompressFile(string inputPath)
+        string outputPath = inputPath[..^7];
+        int bufferSize = 4 * (int)Math.Pow(2, 20);
+
+        using (FileStream inputFileStream = new FileStream(inputPath, FileMode.Open, FileAccess.Read))
+        using (FileStream outputFileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
         {
-            FileInfo fileInfo = new FileInfo(inputPath);
-            long inputSize = fileInfo.Length;
-            string outputPath = inputPath + ".zipped";
-            int bufferSize = 13;
-
-            using (FileStream inputFileStream = new FileStream(inputPath, FileMode.Open, FileAccess.Read))
-            using (FileStream outputFileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
-            {
-                EncodeBytes(inputFileStream, outputFileStream, bufferSize);
-            }
-
-            FileInfo encodeFileInfo = new FileInfo(outputPath);
-            long outputSize = encodeFileInfo.Length;
-
-            return inputSize / outputSize;
+            DecodeBytes(inputFileStream, outputFileStream, bufferSize);
         }
+    }
 
-        /// <summary>
-        /// Decompresses the specified LZW-compressed file.
-        /// The decompressed data is written to a new file with the original extension before compression.
-        /// </summary>
-        /// <param name="inputPath">The path of the file to be decompressed.</param>
-        public static void DecompressFile(string inputPath)
+    private static void EncodeBytes(FileStream inputFileStream, FileStream outputFileStream, int bufferSize)
+    {
+        Trie trie = new Trie();
+        DataHandler.EncodeDataHandler handler = new(inputFileStream, outputFileStream, bufferSize, 9);
+        TrieBytesInit(trie);
+        List<byte> byteSequence = [];
+
+        while (!handler.IsFileReadComplete)
         {
-            string outputPath = inputPath[..^7];
-            int bufferSize = 13;
-
-            using (FileStream inputFileStream = new FileStream(inputPath, FileMode.Open, FileAccess.Read))
-            using (FileStream outputFileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+            byte currentByte = handler.GetNextByte();
+            byteSequence.Add(currentByte);
+            if (!trie.Contains(byteSequence.ToArray()))
             {
-                DecodeBytes(inputFileStream, outputFileStream, bufferSize);
-            }
-        }
+                (Node? terminal, bool isSuccess) = trie.Add(byteSequence.ToArray());
+                byteSequence.Clear();
 
-        private static void EncodeBytes(FileStream inputFileStream, FileStream outputFileStream, int bufferSize)
-        {
-            Trie trie = new Trie();
-            TrieBytesInit(trie);
-            int bufferLength = bufferSize;
-            byte[] inputBuffer = new byte[bufferLength];
-            List<byte> outputBuffer = [];
-            Queue<bool> bitBuffer = [];
-            int bytesRead = 0;
-            int currentCodeSize = 9;
-            List<byte> byteSequence = [];
-            bool isFill = FillBuffer(inputFileStream, ref bytesRead, inputBuffer);
+                if (!isSuccess)
+                {
+                    throw new Exception("Encode error");
+                }
 
-            if (!isFill)
-            {
-                throw new ArgumentException("The file is empty");
+                uint index = terminal!.Index;
+                handler.WriteToBuffer(index);
+                handler.ReturnToPreviousByte();
             }
 
-            for (int i = 0; i < bytesRead; i++)
+            if (trie.Size == Math.Pow(2, handler.ChunkSize))
             {
-                byte currentByte = inputBuffer[i];
-                byteSequence.Add(currentByte);
-                if (!trie.Contains(byteSequence.ToArray()))
-                {
-                    (Node? terminal, bool isSuccess) = trie.Add(byteSequence.ToArray());
-                    byteSequence.Clear();
-
-                    if (!isSuccess)
-                    {
-                        throw new Exception("Encode error");
-                    }
-
-                    uint index = terminal!.Index;
-                    bool[] binaryInterptitation = GetBinaryInterpritationArray(index, currentCodeSize);
-
-                    AddBitsToBuffer(binaryInterptitation, bitBuffer);
-                    WriteToBytes(outputBuffer, bitBuffer, false);
-                    i--;
-                }
-
-                if (i == bytesRead - 1)
-                {
-                    isFill = FillBuffer(inputFileStream, ref bytesRead, inputBuffer);
-
-                    if (!isFill && trie.Contains(byteSequence.ToArray()))
-                    {
-                        uint index = trie.GetIndex(byteSequence.ToArray());
-                        bool[] binaryInterptitation = GetBinaryInterpritationArray(index, currentCodeSize);
-                        AddBitsToBuffer(binaryInterptitation, bitBuffer);
-                        WriteToBytes(outputBuffer, bitBuffer, true);
-                    }
-                    else
-                    {
-                        i = -1;
-                    }
-
-                    outputFileStream.Write(outputBuffer.ToArray(), 0, outputBuffer.Count);
-                    outputBuffer.Clear();
-                }
-
-                if (trie.Size == Math.Pow(2, currentCodeSize))
-                {
-                    currentCodeSize++;
-                }
+                handler.ChunkSize++;
             }
         }
 
-        private static void DecodeBytes(FileStream inputFileStream, FileStream outputFileStream, int bufferSize)
+        if (byteSequence.Count > 0)
         {
-            int currentByteIndex = 0;
-            Dictionary<uint, byte[]> sequencesDict = [];
-            DictBytesInit(sequencesDict);
+            uint index = trie.GetIndex(byteSequence.ToArray());
+            handler.WriteToBuffer(index);
+        }
 
-            Queue<bool> bitBuffer = [];
-            byte[]? previousSequence = null;
-            int bufferLength = bufferSize;
-            byte[] inputBuffer = new byte[bufferLength];
-            List<byte> outputBuffer = [];
-            int bytesRead = 0;
-            int currentCodeSize = 9;
-            bool isFill = FillBuffer(inputFileStream, ref bytesRead, inputBuffer);
+        handler.FinalizeEncode();
+    }
 
-            if (!isFill)
+    private static void DecodeBytes(FileStream inputFileStream, FileStream outputFileStream, int bufferSize)
+    {
+        DataHandler.DecodeDataHandler handler = new(inputFileStream, outputFileStream, bufferSize, 9);
+        Dictionary<uint, byte[]> sequencesDictionary = [];
+        DictionaryBytesInit(sequencesDictionary);
+
+        byte[]? previousSequence = null;
+
+        while (!handler.IsFileReadComplete)
+        {
+            uint code = handler.GetNextCode();
+
+            if (sequencesDictionary.ContainsKey(code))
             {
-                throw new ArgumentException("The file is empty");
-            }
-
-            while (currentByteIndex < bytesRead || bitBuffer.Count >= currentCodeSize)
-            {
-                bool isRefil = ReadBytesUntilEnoughBits(inputBuffer, ref currentByteIndex, bitBuffer, currentCodeSize, ref bytesRead, inputFileStream);
-                if (isRefil)
-                {
-                    outputFileStream.Write(outputBuffer.ToArray(), 0, outputBuffer.Count);
-                    outputBuffer.Clear();
-                }
-
-                uint code = GetDecimalInterpritation(GetBitsArray(bitBuffer, currentCodeSize));
-
-                if (sequencesDict.ContainsKey(code))
-                {
-                    WriteSequence(sequencesDict[code], outputBuffer);
-                    if (previousSequence != null)
-                    {
-                        byte[] newSequence = new byte[previousSequence.Length + 1];
-                        Array.Copy(previousSequence, newSequence, previousSequence.Length);
-                        newSequence[^1] = sequencesDict[code][0];
-                        sequencesDict[(uint)sequencesDict.Count] = newSequence;
-                    }
-
-                    previousSequence = sequencesDict[code];
-                }
-                else
+                handler.WriteSequence(sequencesDictionary[code]);
+                if (previousSequence != null)
                 {
                     byte[] newSequence = new byte[previousSequence.Length + 1];
                     Array.Copy(previousSequence, newSequence, previousSequence.Length);
-                    newSequence[^1] = newSequence[0];
-                    sequencesDict[(uint)sequencesDict.Count] = newSequence;
-                    WriteSequence(newSequence, outputBuffer);
-                    previousSequence = newSequence;
+                    newSequence[^1] = sequencesDictionary[code][0];
+                    sequencesDictionary[(uint)sequencesDictionary.Count] = newSequence;
                 }
 
-                if (currentByteIndex >= bytesRead)
+                previousSequence = sequencesDictionary[code];
+            }
+            else
+            {
+                if (previousSequence == null)
                 {
-                    FillBuffer(inputFileStream, ref bytesRead, inputBuffer);
-                    outputFileStream.Write(outputBuffer.ToArray(), 0, outputBuffer.Count);
-                    outputBuffer.Clear();
-                    currentByteIndex = 0;
+                    throw new InvalidDataException("File is corrupted: expected byte sequence is missing");
                 }
 
-                if (sequencesDict.Count == Math.Pow(2, currentCodeSize) - 1)
-                {
-                    currentCodeSize++;
-                }
+                byte[] newSequence = new byte[previousSequence.Length + 1];
+                Array.Copy(previousSequence, newSequence, previousSequence.Length);
+                newSequence[^1] = newSequence[0];
+                sequencesDictionary[(uint)sequencesDictionary.Count] = newSequence;
+                handler.WriteSequence(newSequence);
+                previousSequence = newSequence;
+            }
+
+            if (sequencesDictionary.Count == Math.Pow(2, handler.ChunkSize) - 1)
+            {
+                handler.ChunkSize++;
             }
         }
 
-        private static void WriteSequence(byte[] sequence, List<byte> outputBuffer)
+        handler.FinalizeDecode();
+    }
+
+    private static void TrieBytesInit(Trie trie)
+    {
+        for (int i = 0; i < 256; ++i)
         {
-            for (int i = 0; i < sequence.Length; i++)
-            {
-                outputBuffer.Add(sequence[i]);
-            }
+            trie.Add((byte)i);
         }
+    }
 
-        private static uint GetDecimalInterpritation(bool[] bits)
+    private static void DictionaryBytesInit(Dictionary<uint, byte[]> dict)
+    {
+        for (uint i = 0; i < 256; ++i)
         {
-            uint temp = 0;
-            uint multiplier = 1;
-
-            for (int i = bits.Length - 1; i >= 0; --i)
-            {
-                temp += bits[i] ? multiplier : 0;
-                multiplier *= 2;
-            }
-
-            return temp;
-        }
-
-        private static bool[] GetBitsArray(Queue<bool> bitBuffer, int count)
-        {
-            if (bitBuffer.Count < count)
-            {
-                throw new ArgumentException("There are currently fewer bits in the queue than required.");
-            }
-
-            bool[] bitArray = new bool[count];
-
-            for (int i = 0; i < count; ++i)
-            {
-                bitArray[i] = bitBuffer.Dequeue();
-            }
-
-            return bitArray;
-        }
-
-        private static bool ReadBytesUntilEnoughBits(byte[] inputBuffer, ref int currentByteIndex, Queue<bool> bitBuffer, int currentCodeSize, ref int bytesRead, FileStream inputFileStream)
-        {
-            bool isRefill = false;
-            while (bitBuffer.Count < currentCodeSize)
-            {
-                if (currentByteIndex == inputBuffer.Length)
-                {
-                    if (FillBuffer(inputFileStream, ref bytesRead, inputBuffer))
-                    {
-                        currentByteIndex = 0;
-                        isRefill = true;
-                        continue;
-                    }
-
-                    throw new Exception("Decode error");
-                }
-
-                AddBitsToBuffer(ByteToBits(inputBuffer[currentByteIndex++]), bitBuffer);
-            }
-
-
-            return isRefill;
-        }
-
-        private static bool FillBuffer(FileStream inputFileStream, ref int bytesRead, byte[] inputBuffer)
-        {
-            bytesRead = inputFileStream.Read(inputBuffer, 0, inputBuffer.Length);
-            return bytesRead != 0;
-        }
-
-        private static bool[] ByteToBits(byte value)
-        {
-            bool[] bits = new bool[8];
-
-            for (int i = 0; i < 8; i++)
-            {
-                bits[7 - i] = (value & (1 << i)) != 0;
-            }
-
-            return bits;
-        }
-
-        private static void AddBitsToBuffer(bool[] bits, Queue<bool> bitBuffer)
-        {
-            foreach (bool bit in bits)
-            {
-                bitBuffer.Enqueue(bit);
-            }
-        }
-
-        private static void WriteToBytes(List<byte> outputBuffer, Queue<bool> bitBuffer, bool needToEmpty)
-        {
-            while (bitBuffer.Count >= 8)
-            {
-                bool[] bitArray = new bool[8];
-                for (int i = 0; i < 8; i++)
-                {
-                    bitArray[i] = bitBuffer.Dequeue();
-                }
-
-                outputBuffer.Add(ConvertToByte(bitArray));
-            }
-
-            if (needToEmpty && bitBuffer.Count > 0)
-            {
-                bool[] bitArray = new bool[8];
-                int index = 0;
-
-                while (bitBuffer.Count > 0)
-                {
-                    bitArray[index++] = bitBuffer.Dequeue();
-                }
-
-                outputBuffer.Add(ConvertToByte(bitArray));
-            }
-        }
-
-        private static byte ConvertToByte(bool[] bitsArray)
-        {
-            if (bitsArray.Length != 8)
-            {
-                throw new ArgumentException("Array length must be exactly 8 bits to convert to a byte.");
-            }
-
-            int temp = 0;
-            int multiplier = 1;
-
-            for (int i = bitsArray.Length - 1; i >= 0; --i)
-            {
-                temp += bitsArray[i] ? multiplier : 0;
-                multiplier *= 2;
-            }
-
-            return (byte)temp;
-        }
-
-        private static bool[] GetBinaryInterpritationArray(uint num, int size)
-        {
-            bool[] binaryInterpritation = new bool[size];
-            string binaryString = Convert.ToString(num, 2);
-
-            if (binaryString.Length > size)
-            {
-                throw new ArgumentException("Can't code num with so small size");
-            }
-
-            for (int i = 0; i < binaryString.Length; ++i)
-            {
-                binaryInterpritation[size - i - 1] = binaryString[binaryString.Length - i - 1] == '1';
-            }
-
-            return binaryInterpritation;
-        }
-
-        private static void TrieBytesInit(Trie trie)
-        {
-            for (int i = 0; i < 256; ++i)
-            {
-                trie.Add((byte)i);
-            }
-        }
-
-        private static void DictBytesInit(Dictionary<uint, byte[]> dict)
-        {
-            for (uint i = 0; i < 256; ++i)
-            {
-                byte[] unitByteArray = { (byte)i };
-                dict[i] = unitByteArray;
-            }
+            byte[] unitByteArray = { (byte)i };
+            dict[i] = unitByteArray;
         }
     }
 }

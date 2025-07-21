@@ -1,4 +1,8 @@
-﻿using System.Collections;
+﻿// <copyright file="Program.cs" company="Roman Levashev">
+// Copyright (c) Roman Levashev. All rights reserved.
+// Licensed under the MIT License.
+// </copyright>
+
 using LempelZivWelch;
 
 if (args.Length < 2)
@@ -13,7 +17,6 @@ string filePath = args[1];
 switch (operation)
 {
     case "-c":
-
         Console.WriteLine($"Compressing file: {filePath}");
         long compressionRatio = LZW.CompressFile(filePath);
         Console.WriteLine($"Compression ratio: {compressionRatio}");
