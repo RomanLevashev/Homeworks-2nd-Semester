@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ByteTrie\ByteTrie.csproj" />
+    <ProjectReference Include="..\DataHandler\DataHandler.csproj" />
     <ProjectReference Include="..\IOHandler\DataHandler.csproj" />
   </ItemGroup>
 
