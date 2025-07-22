@@ -28,9 +28,10 @@ public static class BurrowsWheeller
     /// <exception cref="ArgumentNullException">Thrown when input is null or empty.</exception>
     public static (string Transformed, int Position) Transform(string input)
     {
-        if (string.IsNullOrEmpty(input))
+        ArgumentNullException.ThrowIfNull(input,  "Input string can't be null.");
+        if (input.Length == 0)
         {
-            throw new ArgumentNullException("input");
+            throw new ArgumentException("Input string can't be empty.");
         }
 
         int length = input.Length;
@@ -68,9 +69,10 @@ public static class BurrowsWheeller
     /// <exception cref="IndexOutOfRangeException"> Thrown when: position is outside valid range.</exception>
     public static string InverseTransform(string transformed, int position)
     {
-        if (string.IsNullOrEmpty(transformed))
+        ArgumentNullException.ThrowIfNull(transformed, "Transformed string can't be null.");
+        if (transformed.Length == 0)
         {
-            throw new ArgumentNullException(nameof(transformed));
+            throw new ArgumentException("Input string can't be empty.");
         }
 
         if (position >= transformed.Length || position < 0)
