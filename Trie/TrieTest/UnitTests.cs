@@ -48,6 +48,6 @@ public sealed class UnitTests
         Assert.IsTrue(trie.Contains("asdb"));
         Assert.IsFalse(trie.Contains("asd"));
         Assert.IsTrue(trie.Remove("asdb"));
-        Assert.IsTrue(trie.Root.Children.Count == 0);
+        Assert.AreEqual(0, trie.Root.Children.Count);
     }
 }

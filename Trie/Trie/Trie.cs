@@ -32,9 +32,10 @@ public class Trie
     /// </exception>
     public bool Add(string element)
     {
-        if (string.IsNullOrEmpty(element))
+        ArgumentNullException.ThrowIfNull(element, nameof(element));
+        if (element.Length == 0)
         {
-            throw new ArgumentException("String cannot be null or empty", nameof(element));
+            throw new ArgumentException("String cannot be empty", nameof(element));
         }
 
         var (endPrefixNode, nextPosition, pathStack) = this.FindLongestPrefix(element, false);
@@ -67,9 +68,10 @@ public class Trie
     /// </exception>
     public bool Remove(string element)
     {
-        if (string.IsNullOrEmpty(element))
+        ArgumentNullException.ThrowIfNull(element, nameof(element));
+        if (element.Length == 0)
         {
-            throw new ArgumentException("String cannot be null or empty", nameof(element));
+            throw new ArgumentException("String cannot be empty", nameof(element));
         }
 
         var (endPrefixNode, nextPosition, pathStack) = this.FindLongestPrefix(element, true);
@@ -125,9 +127,10 @@ public class Trie
     /// </exception>
     public bool Contains(string element)
     {
-        if (string.IsNullOrEmpty(element))
+        ArgumentNullException.ThrowIfNull(element, nameof(element));
+        if (element.Length == 0)
         {
-            throw new ArgumentException("String cannot be null or empty", nameof(element));
+            throw new ArgumentException("String cannot be empty", nameof(element));
         }
 
         var (endPrefixNode, nextPosition, pathStack) = this.FindLongestPrefix(element, false);
@@ -148,9 +151,10 @@ public class Trie
     /// </exception>
     public int HowManyStartsWithPrefix(string prefix)
     {
-        if (string.IsNullOrEmpty(prefix))
+        ArgumentNullException.ThrowIfNull(prefix, nameof(prefix));
+        if (prefix.Length == 0)
         {
-            throw new ArgumentException("String cannot be null or empty", nameof(prefix));
+            throw new ArgumentException("Prefix cannot be empty", nameof(prefix));
         }
 
         var (endPrefixNode, nextPosition, pathStack) = this.FindLongestPrefix(prefix, false);
@@ -160,9 +164,10 @@ public class Trie
 
     private static Node CreateSuffix(string str)
     {
-        if (string.IsNullOrEmpty(str))
+        ArgumentNullException.ThrowIfNull(str, nameof(str));
+        if (str.Length == 0)
         {
-            throw new ArgumentException("String cannot be null or empty", nameof(str));
+            throw new ArgumentException("String cannot be empty", nameof(str));
         }
 
         Node source = new Node(str[0]);
