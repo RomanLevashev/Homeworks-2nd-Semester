@@ -11,15 +11,15 @@ Console.OutputEncoding = Encoding.UTF8;
 
 while (choice != Options.Exit)
 {
-    Console.WriteLine("Выберите действие:");
-    Console.WriteLine("0 - Выход");
-    Console.WriteLine("1 - Преобразовать строку по Барроузу-Уилеру");
-    Console.WriteLine("2 - Восстановить строку по Барроузу-Уилеру");
+    Console.WriteLine("Select an action:");
+    Console.WriteLine("0 - Exit");
+    Console.WriteLine("1 - Transform string using Burrows-Wheeler");
+    Console.WriteLine("2 - Reconstruct string using Burrows-Wheeler");
     string? input = Console.ReadLine();
 
     if (input == null)
     {
-        Console.WriteLine("Некорректный ввод!");
+        Console.WriteLine("Invalid input!");
         continue;
     }
 
@@ -29,7 +29,7 @@ while (choice != Options.Exit)
     }
     catch (FormatException)
     {
-        Console.WriteLine("Некорректный ввод!");
+        Console.WriteLine("Invalid input!");
         continue;
     }
 
@@ -40,33 +40,32 @@ while (choice != Options.Exit)
 
     if (choice == Options.Transform)
     {
-        Console.WriteLine("Введите строку, которую хотите преобразовать");
+        Console.WriteLine("Enter the string to transform:");
         string? str = Console.ReadLine();
         if (string.IsNullOrEmpty(str))
         {
-            Console.WriteLine("Некорректный ввод!");
-            continue;
+            Console.WriteLine("Invalid input!");
         }
 
-        var (transformed, position) = BurrowsWheeller.Transform(str);
-        Console.WriteLine($"Строка: {transformed}\nПозиция, в которой стоит исходная строка {position}");
+        var (transformed, position) = BurrowsWheeller.Transform(str!);
+        Console.WriteLine($"Transformed string: {transformed}\nOriginal string position: {position}");
     }
 
     if (choice == Options.Invert)
     {
-        Console.WriteLine("Введите строку, которую нужно вернуть к исходному виду");
+        Console.WriteLine("Enter the string to reconstruct");
         string? str = Console.ReadLine();
         if (string.IsNullOrEmpty(str))
         {
-            Console.WriteLine("Некорректный ввод!");
+            Console.WriteLine("Invalid input!");
             continue;
         }
 
-        Console.WriteLine("Введите позицию, в которой стояла строка");
+        Console.WriteLine("Enter the original string position");
         string? positionStr = Console.ReadLine();
-        if (positionStr == null || positionStr == string.Empty)
+        if (string.IsNullOrEmpty(positionStr))
         {
-            Console.WriteLine("Некорректный ввод!");
+            Console.WriteLine("Invalid input!");
             continue;
         }
 
@@ -78,7 +77,7 @@ while (choice != Options.Exit)
         }
         catch(FormatException)
         {
-            Console.WriteLine("Некорректный ввод!");
+            Console.WriteLine("Invalid input!");
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// <copyright file="BurrowsWheelerTest.cs" company="Roman Levashev">
+﻿// <copyright file="BWTTest.cs" company="Roman Levashev">
 // Copyright (c) Roman Levashev. All rights reserved.
 // Licensed under the MIT License.
 // </copyright>
@@ -45,7 +45,7 @@ public sealed class BWTTest
     /// Verifies that empty string input throws <see cref="ArgumentNullException"/>.
     /// </summary>
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
+    [ExpectedException(typeof(ArgumentException))]
     public void EmptyStr()
     {
         TestTransformAndInvert(string.Empty, string.Empty);

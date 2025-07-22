@@ -6,22 +6,22 @@
 namespace BurrowsWheelerTransform
 {
     /// <summary>
-    /// Перечисление с возможными операциями для преобразования строки.
+    /// Enumeration of possible operations for string transformation.
     /// </summary>
     public enum Options
     {
         /// <summary>
-        /// Выйти из программы.
+        /// Exit the program.
         /// </summary>
         Exit,
 
         /// <summary>
-        /// Операция преобразования строки.
+        /// String transformation operation.
         /// </summary>
         Transform,
 
         /// <summary>
-        /// Операция восстановления строки после преобразования.
+        /// String inversion operation (reversing the transformation).
         /// </summary>
         Invert,
     }
