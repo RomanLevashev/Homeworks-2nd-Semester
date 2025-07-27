@@ -1,10 +1,7 @@
 ﻿namespace Graph
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
 
     /// <summary>
     /// Provides algorithms for finding spanning trees in undirected graphs.
@@ -16,13 +13,26 @@
         /// </summary>
         /// <param name="graph">The input undirected graph.</param>
         /// <returns>
-        /// A new UndirectedGraph representing the maximum spanning tree.
+        /// A new UndirectedGraph representing the maximum spanning tree or <c>null</c> if the input graph is disconnected, empty or null.
         /// </returns>
-        public static UndirectedGraph GetMaximumSpanningTree(UndirectedGraph graph)
+        public static UndirectedGraph? GetMaximumSpanningTree(UndirectedGraph graph)
         {
+            if (graph is null)
+            {
+                Console.Error.WriteLine("Graph cannot be null");
+                return null;
+            }
+
+            if (graph.Edges.Count == 0)
+            {
+                Console.Error.WriteLine("Graph must be connected to compute maximum spanning tree.");
+                return null;
+            }
+
             if (!graph.IsConnected())
             {
-                throw new ArgumentException("Graph is disconnected");
+                Console.Error.WriteLine("Graph is disconnected.");
+                return null;
             }
 
             var maximumSpanningTree = new UndirectedGraph();
