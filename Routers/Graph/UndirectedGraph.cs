@@ -1,4 +1,9 @@
-﻿namespace Graph
+﻿// <copyright file="UndirectedGraph.cs" company="Roman Levashev">
+// Copyright (c) Roman Levashev. All rights reserved.
+// Licensed under the MIT License.
+// </copyright>
+
+namespace Graph
 {
     using System.Collections.Generic;
     using System.Linq;
