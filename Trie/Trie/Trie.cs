@@ -7,7 +7,6 @@ namespace Trie;
 
 using System;
 using System.Collections.Generic;
-using System.Xml.Linq;
 
 /// <summary>
 /// Represents a Trie (prefix tree) data structure for storing and retrieving strings efficiently.
@@ -17,7 +16,7 @@ public class Trie
     /// <summary>
     /// Gets the root node of the Trie.
     /// </summary>
-    public Node Root { get;  } = new Node('\0');
+    public Node Root { get; } = new Node('\0');
 
     /// <summary>
     /// Adds a string to the Trie.
@@ -32,13 +31,9 @@ public class Trie
     /// </exception>
     public bool Add(string element)
     {
-        ArgumentNullException.ThrowIfNull(element, nameof(element));
-        if (element.Length == 0)
-        {
-            throw new ArgumentException("String cannot be empty", nameof(element));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(element, nameof(element));
 
-        var (endPrefixNode, nextPosition, pathStack) = this.FindLongestPrefix(element, false);
+        var (endPrefixNode, nextPosition, _) = this.FindLongestPrefix(element);
 
         if (nextPosition == element.Length)
         {
@@ -68,15 +63,11 @@ public class Trie
     /// </exception>
     public bool Remove(string element)
     {
-        ArgumentNullException.ThrowIfNull(element, nameof(element));
-        if (element.Length == 0)
-        {
-            throw new ArgumentException("String cannot be empty", nameof(element));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(element, nameof(element));
 
-        var (endPrefixNode, nextPosition, pathStack) = this.FindLongestPrefix(element, true);
+        var (endPrefixNode, nextPosition, pathStack) = this.FindLongestPrefix(element);
 
-        if (nextPosition != element.Length || endPrefixNode.IsTerminal == false)
+        if (nextPosition != element.Length || !endPrefixNode.IsTerminal)
         {
             return false;
         }
@@ -127,15 +118,11 @@ public class Trie
     /// </exception>
     public bool Contains(string element)
     {
-        ArgumentNullException.ThrowIfNull(element, nameof(element));
-        if (element.Length == 0)
-        {
-            throw new ArgumentException("String cannot be empty", nameof(element));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(element, nameof(element));
 
-        var (endPrefixNode, nextPosition, pathStack) = this.FindLongestPrefix(element, false);
+        var (endPrefixNode, nextPosition, _) = this.FindLongestPrefix(element);
 
-        return nextPosition == element.Length && endPrefixNode.IsTerminal == true;
+        return nextPosition == element.Length && endPrefixNode.IsTerminal;
     }
 
     /// <summary>
@@ -151,31 +138,23 @@ public class Trie
     /// </exception>
     public int HowManyStartsWithPrefix(string prefix)
     {
-        ArgumentNullException.ThrowIfNull(prefix, nameof(prefix));
-        if (prefix.Length == 0)
-        {
-            throw new ArgumentException("Prefix cannot be empty", nameof(prefix));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(prefix, nameof(prefix));
 
-        var (endPrefixNode, nextPosition, pathStack) = this.FindLongestPrefix(prefix, false);
+        var (endPrefixNode, nextPosition, _) = this.FindLongestPrefix(prefix);
 
         return nextPosition == prefix.Length ? endPrefixNode.Children.Count : 0;
     }
 
     private static Node CreateSuffix(string str)
     {
-        ArgumentNullException.ThrowIfNull(str, nameof(str));
-        if (str.Length == 0)
-        {
-            throw new ArgumentException("String cannot be empty", nameof(str));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(str, nameof(str));
 
-        Node source = new Node(str[0]);
+        Node source = new(str[0]);
         Node previous = source;
 
         for (int i = 1; i < str.Length; i++)
         {
-            Node newNode = new Node(str[i]);
+            Node newNode = new(str[i]);
             previous.Children[str[i]] = newNode;
             previous = newNode;
         }
@@ -184,11 +163,11 @@ public class Trie
         return source;
     }
 
-    private (Node EndPrefixNode, int NextPosition, Stack<Node>? PathStack) FindLongestPrefix(string element, bool needPathStack)
+    private (Node EndPrefixNode, int NextPosition, Stack<Node> PathStack) FindLongestPrefix(string element)
     {
         int currentPosition = 0;
         Node currentNode = this.Root;
-        Stack<Node> stack = new Stack<Node>();
+        Stack<Node> stack = new();
 
         while (currentPosition < element.Length)
         {
@@ -196,19 +175,16 @@ public class Trie
             if (currentNode.Children.TryGetValue(currentElement, out Node? value))
             {
                 currentNode = value;
-                if (needPathStack)
-                {
-                    stack.Push(currentNode);
-                }
+                stack.Push(currentNode);
 
                 currentPosition++;
             }
             else
             {
-                return needPathStack ? (currentNode, currentPosition, stack) : (currentNode, currentPosition, null);
+                return (currentNode, currentPosition, stack);
             }
         }
 
-        return needPathStack ? (currentNode, currentPosition, stack) : (currentNode, currentPosition, null);
+        return (currentNode, currentPosition, stack);
     }
 }

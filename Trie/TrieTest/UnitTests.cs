@@ -3,6 +3,8 @@
 // Licensed under the MIT License.
 // </copyright>
 
+using Trie;
+
 namespace TrieTest;
 
 /// <summary>
@@ -50,4 +52,46 @@ public sealed class UnitTests
         Assert.IsTrue(trie.Remove("asdb"));
         Assert.AreEqual(0, trie.Root.Children.Count);
     }
+
+    /// <summary>
+    /// Verifies that the <see cref="Trie.Add"/> method throws an <see cref="ArgumentException"/>
+    /// when attempting to add either a null or empty string to the trie.
+    /// </summary>
+    [TestMethod]
+    public void ThrowArgumenExceptionWhenAddingNullOrEmptyString()
+    {
+        Trie.Trie trie = new();
+        this.NullOrEmptyStringTest(trie.Add);
+    }
+
+    /// <summary>
+    /// Verifies that the <see cref="Trie.Contains"/> method throws an <see cref="ArgumentException"/>
+    /// when checking for the presence of either a null or empty string in the trie.
+    /// </summary>
+    [TestMethod]
+    public void ThrowArgumentExceptionWhenCheckingContainsForNullOrEmptyString()
+    {
+        Trie.Trie trie = new();
+        this.NullOrEmptyStringTest(trie.Contains);
+    }
+
+    /// <summary>
+    /// Verifies that the <see cref="Trie.Remove"/> method throws an <see cref="ArgumentException"/>
+    /// when attempting to remove either a null or empty string from the trie.
+    /// </
+    [TestMethod]
+    public void ThrowArgumentExceptionWhenRemovingNullOrEmptyString()
+    {
+        Trie.Trie trie = new();
+        this.NullOrEmptyStringTest(trie.Remove);
+    }
+
+    private bool NullOrEmptyStringTest(Func<string, bool> func)
+    {
+        Assert.ThrowsException<ArgumentException>(() => func(string.Empty));
+        Assert.ThrowsException<ArgumentNullException>(() => func(null!));
+
+        return true;
+    }
+
 }
