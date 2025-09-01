@@ -3,8 +3,6 @@
 // Licensed under the MIT License.
 // </copyright>
 
-using Trie;
-
 namespace TrieTest;
 
 /// <summary>
@@ -93,5 +91,4 @@ public sealed class UnitTests
 
         return true;
     }
-
 }
