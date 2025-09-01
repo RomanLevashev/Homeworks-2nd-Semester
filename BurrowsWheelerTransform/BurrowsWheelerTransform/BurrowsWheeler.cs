@@ -65,11 +65,7 @@ public static class BurrowsWheeler
     /// <exception cref="IndexOutOfRangeException"> Thrown when: position is outside valid range.</exception>
     public static string InverseTransform(string transformed, int position)
     {
-        ArgumentNullException.ThrowIfNull(transformed, "Transformed string can't be null.");
-        if (transformed.Length == 0)
-        {
-            throw new ArgumentException("Input string can't be empty.");
-        }
+        ArgumentException.ThrowIfNullOrEmpty(transformed, nameof(transformed));
 
         if (position >= transformed.Length || position < 0)
         {

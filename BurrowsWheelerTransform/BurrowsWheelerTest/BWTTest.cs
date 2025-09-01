@@ -39,6 +39,18 @@ public sealed class BWTTest
     public void ThrowExceptionWhenTransformingEmptyString() =>
         Assert.ThrowsException<ArgumentException>(() => TransformAndInvertStringShouldReturnOriginalString(string.Empty, string.Empty));
 
+    /// <summary>
+    /// Verifies that the <see cref="BurrowsWheelerTransform.InverseTransform"/> method
+    /// throws an appropriate exception when provided with a position value that exceeds
+    /// the bounds of the transformed string or represents an invalid state for reconstruction.
+    /// </summary>
+    [TestMethod]
+    public void ThrowExceptionWhenGivenImpossibleOriginalStringPosition()
+    {
+        Assert.ThrowsException<IndexOutOfRangeException>(() => BurrowsWheeler.InverseTransform("asd", 4));
+        Assert.ThrowsException<IndexOutOfRangeException>(() => BurrowsWheeler.InverseTransform("asd", -1));
+    }
+
     private static void TransformAndInvertStringShouldReturnOriginalString(string testStr, string expectedTransformResult)
     {
         var transformedResult = BurrowsWheeler.Transform(testStr);
