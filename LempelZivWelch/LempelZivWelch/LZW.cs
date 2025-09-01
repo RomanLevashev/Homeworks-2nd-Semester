@@ -22,18 +22,18 @@ public class LZW
     /// </returns>
     public static long CompressFile(string inputPath)
     {
-        FileInfo fileInfo = new FileInfo(inputPath);
+        FileInfo fileInfo = new(inputPath);
         long inputSize = fileInfo.Length;
         string outputPath = inputPath + ".zipped";
         int bufferSize = 4 * (int)Math.Pow(2, 20);
 
-        using (FileStream inputFileStream = new FileStream(inputPath, FileMode.Open, FileAccess.Read))
-        using (FileStream outputFileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+        using (FileStream inputFileStream = new(inputPath, FileMode.Open, FileAccess.Read))
+        using (FileStream outputFileStream = new(outputPath, FileMode.Create, FileAccess.Write))
         {
             EncodeBytes(inputFileStream, outputFileStream, bufferSize);
         }
 
-        FileInfo encodeFileInfo = new FileInfo(outputPath);
+        FileInfo encodeFileInfo = new(outputPath);
         long outputSize = encodeFileInfo.Length;
 
         return inputSize / outputSize;
@@ -49,8 +49,8 @@ public class LZW
         string outputPath = inputPath[..^7];
         int bufferSize = 4 * (int)Math.Pow(2, 20);
 
-        using (FileStream inputFileStream = new FileStream(inputPath, FileMode.Open, FileAccess.Read))
-        using (FileStream outputFileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+        using (FileStream inputFileStream = new(inputPath, FileMode.Open, FileAccess.Read))
+        using (FileStream outputFileStream = new(outputPath, FileMode.Create, FileAccess.Write))
         {
             DecodeBytes(inputFileStream, outputFileStream, bufferSize);
         }
