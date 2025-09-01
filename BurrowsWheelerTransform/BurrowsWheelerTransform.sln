@@ -6,9 +6,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BurrowsWheelerTransform", "BurrowsWheelerTransform\BurrowsWheelerTransform.csproj", "{416FAB22-C867-4C31-B3AA-ADC6DADDB354}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9FE5DF5A-F3E9-4CDE-BD3F-AAAB7355FB40}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BurrowsWheelerTest", "BurrowsWheelerTest\BurrowsWheelerTest.csproj", "{BFF75CED-E80A-4490-BE2C-FC1C3A982E95}"
 EndProject
@@ -29,5 +26,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E555C068-B5E3-4944-8021-9B196CBD9D5E}
 	EndGlobalSection
 EndGlobal

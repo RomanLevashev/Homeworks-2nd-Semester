@@ -18,44 +18,32 @@ public sealed class BWTTest
     /// Tests transformation and inversion of a typical string with varied characters.
     /// </summary>
     [TestMethod]
-    public void DefaultString()
-    {
-        TestTransformAndInvert("banana", "nnbaaa");
-    }
+    public void TransformAndInvertStringWithVariedCharacters() => TransformAndInvertStringShouldReturnOriginalString("banana", "nnbaaa");
 
     /// <summary>
     /// Tests transformation of a string containing identical characters.
     /// </summary>
     [TestMethod]
-    public void ConstantString()
-    {
-        TestTransformAndInvert("aaaa", "aaaa");
-    }
+    public void TransformStringWithIdenticalCharacters() => TransformAndInvertStringShouldReturnOriginalString("aaaa", "aaaa");
 
     /// <summary>
     /// Tests transformation of a single-character string.
     /// </summary>
     [TestMethod]
-    public void OneCharacterString()
-    {
-        TestTransformAndInvert("a", "a");
-    }
+    public void TransformSingleCharacterString() => TransformAndInvertStringShouldReturnOriginalString("a", "a");
 
     /// <summary>
     /// Verifies that empty string input throws <see cref="ArgumentNullException"/>.
     /// </summary>
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
-    public void EmptyStr()
-    {
-        TestTransformAndInvert(string.Empty, string.Empty);
-    }
+    public void ThrowExceptionWhenTransformingEmptyString() =>
+        Assert.ThrowsException<ArgumentException>(() => TransformAndInvertStringShouldReturnOriginalString(string.Empty, string.Empty));
 
-    private static void TestTransformAndInvert(string testStr, string expectedTransformResult)
+    private static void TransformAndInvertStringShouldReturnOriginalString(string testStr, string expectedTransformResult)
     {
-        var transformedResult = BurrowsWheeller.Transform(testStr);
+        var transformedResult = BurrowsWheeler.Transform(testStr);
         Assert.AreEqual(expectedTransformResult, transformedResult.Transformed);
-        var invertResult = BurrowsWheeller.InverseTransform(transformedResult.Transformed, transformedResult.Position);
+        var invertResult = BurrowsWheeler.InverseTransform(transformedResult.Transformed, transformedResult.Position);
         Assert.AreEqual(testStr, invertResult);
     }
 }

@@ -47,7 +47,7 @@ while (choice != Options.Exit)
             Console.WriteLine("Invalid input!");
         }
 
-        var (transformed, position) = BurrowsWheeller.Transform(str!);
+        var (transformed, position) = BurrowsWheeler.Transform(str!);
         Console.WriteLine($"Transformed string: {transformed}\nOriginal string position: {position}");
     }
 
@@ -72,10 +72,10 @@ while (choice != Options.Exit)
         try
         {
             int position = int.Parse(positionStr);
-            string result = BurrowsWheeller.InverseTransform(str, position);
+            string result = BurrowsWheeler.InverseTransform(str, position);
             Console.WriteLine(result);
         }
-        catch(FormatException)
+        catch (FormatException)
         {
             Console.WriteLine("Invalid input!");
         }

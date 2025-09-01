@@ -1,4 +1,4 @@
-﻿// <copyright file="BurrowsWheeller.cs" company="Roman Levashev">
+﻿// <copyright file="BurrowsWheeler.cs" company="Roman Levashev">
 // Copyright (c) Roman Levashev. All rights reserved.
 // Licensed under the MIT License.
 // </copyright>
@@ -12,7 +12,7 @@ using System.Text;
 /// <summary>
 /// Provides methods for encoding and decoding text using the Burrows-Wheeler Transform algorithm.
 /// </summary>
-public static class BurrowsWheeller
+public static class BurrowsWheeler
 {
     /// <summary>
     /// Performs Burrows-Wheeler Transform on the input string.
@@ -28,11 +28,7 @@ public static class BurrowsWheeller
     /// <exception cref="ArgumentNullException">Thrown when input is null or empty.</exception>
     public static (string Transformed, int Position) Transform(string input)
     {
-        ArgumentNullException.ThrowIfNull(input,  "Input string can't be null.");
-        if (input.Length == 0)
-        {
-            throw new ArgumentException("Input string can't be empty.");
-        }
+        ArgumentException.ThrowIfNullOrEmpty(input, "Input string can't be null or empty.");
 
         int length = input.Length;
         var rotations = new string[length];
