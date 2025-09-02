@@ -9,12 +9,7 @@ using Routers;
 Console.Write("Enter input path: ");
 string? inputPath = Console.ReadLine();
 
-ArgumentNullException.ThrowIfNull(inputPath, nameof(inputPath));
-
-if (inputPath == string.Empty)
-{
-    throw new ArgumentException(nameof(inputPath));
-}
+ArgumentException.ThrowIfNullOrEmpty(inputPath, nameof(inputPath));
 
 string directory = Path.GetDirectoryName(inputPath)!;
 string fileName = Path.GetFileNameWithoutExtension(inputPath);

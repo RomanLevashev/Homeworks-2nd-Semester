@@ -50,7 +50,7 @@ public sealed class UndirectedGraphTests
     /// Tests the maximum spanning tree generation.
     /// </summary>
     [TestMethod]
-    public void MaxSpanningTreeTest()
+    public void FindMaximumSpanningTreeInConnectedGraph()
     {
         var graph = new UndirectedGraph();
 
@@ -76,9 +76,26 @@ public sealed class UndirectedGraphTests
         graph.AddEdge(5, 3, 5);
         graph.AddEdge(5, 4, 10);
         var expectedTotalWeight = 34;
-        UndirectedGraph maxSt = SpanningTreeFinder.GetMaximumSpanningTree(graph)!;
-        Assert.IsTrue(maxSt!.IsConnected());
-        Assert.AreEqual(maxSt.Vertices.Count, maxSt.Edges.Count + 1);
-        Assert.AreEqual(expectedTotalWeight, maxSt.Edges.Sum(e => e.Weight));
+        var maxSpanningTree = SpanningTreeFinder.GetMaximumSpanningTree(graph);
+        Assert.IsTrue(maxSpanningTree!.IsConnected());
+        Assert.AreEqual(maxSpanningTree.Vertices.Count, maxSpanningTree.Edges.Count + 1);
+        Assert.AreEqual(expectedTotalWeight, maxSpanningTree.Edges.Sum(e => e.Weight));
+    }
+
+    /// <summary>
+    /// Verifies that the <see cref="SpanningTreeFinder.GetMaximumSpanningTree"/> method
+    /// returns null when provided with a disconnected graph that cannot form a complete spanning tree.
+    /// </summary>
+    [TestMethod]
+    public void ReturnNullWhenGraphIsDisconnected()
+    {
+        var graph = new UndirectedGraph();
+
+        graph.AddEdge(1, 2, 3);
+        graph.AddEdge(4, 5, 6);
+
+        var maxSpanningTree = SpanningTreeFinder.GetMaximumSpanningTree(graph);
+
+        Assert.AreEqual(null, maxSpanningTree);
     }
  }
