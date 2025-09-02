@@ -105,10 +105,7 @@ public static class DataHandler
 
     private static List<string> Tokenize(string input)
     {
-        if (input == null)
-        {
-            throw new ArgumentNullException();
-        }
+        ArgumentNullException.ThrowIfNull(input, nameof(input));
 
         var tokens = new List<string>();
         var currentToken = new StringBuilder();

@@ -17,7 +17,7 @@ public sealed class ParseTreeTests
     /// Tests evaluation of correctly formatted expressions.
     /// </summary>
     [TestMethod]
-    public void CorrectExpresions()
+    public void ParseAndEvaluateCorrectExpressionsSuccessfully()
     {
         Assert.AreEqual(3, DataHandler.Parse("(+ 1 2)").Evaluate());
         Assert.AreEqual(2, DataHandler.Parse("(- 5 3)").Evaluate());
@@ -40,7 +40,7 @@ public sealed class ParseTreeTests
     /// Tests handling of expressions with missing whitespace between tokens.
     /// </summary>
     [TestMethod]
-    public void MissingSpace()
+    public void ThrowFormatExceptionWhenMissingWhitespaceBetweenTokens()
     {
         Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+(* 23) (/ 10 2))"));
     }
@@ -49,7 +49,7 @@ public sealed class ParseTreeTests
     /// Tests parsing of single number expressions.
     /// </summary>
     [TestMethod]
-    public void JustANumber()
+    public void ParseAndEvaluateSingleNumberExpressionCorrectly()
     {
         Assert.AreEqual(5, DataHandler.Parse("5").Evaluate());
     }
@@ -58,7 +58,7 @@ public sealed class ParseTreeTests
     /// Tests handling of empty and null input strings.
     /// </summary>
     [TestMethod]
-    public void EmptyAndNullExpression()
+    public void ThrowExceptionWhenInputIsEmptyOrNull()
     {
         Assert.ThrowsException<FormatException>(() => DataHandler.Parse(string.Empty));
         Assert.ThrowsException<ArgumentNullException>(() => DataHandler.Parse(null!));
@@ -68,7 +68,7 @@ public sealed class ParseTreeTests
     /// Tests detection of incomplete expressions with missing operands.
     /// </summary>
     [TestMethod]
-    public void OperatorWithoutOperand()
+    public void ThrowFormatExceptionWhenOperatorMissingOperands()
     {
         Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+ 5)"));
         Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+ )"));
@@ -79,7 +79,7 @@ public sealed class ParseTreeTests
     /// Tests detection of syntax errors with missing parentheses.
     /// </summary>
     [TestMethod]
-    public void MissingParenthesis()
+    public void ThrowFormatExceptionWhenParenthesesAreMissing()
     {
         Assert.ThrowsException<FormatException>(() => DataHandler.Parse("+ 5 9"));
         Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+ + 3 5 8)"));
@@ -89,7 +89,7 @@ public sealed class ParseTreeTests
     /// Tests detection of expressions with extra trailing tokens.
     /// </summary>
     [TestMethod]
-    public void ExtraOperators()
+    public void ThrowFormatExceptionWhenExtraTrailingTokensPresent()
     {
         Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+(* 2 3) (/ 10 2)) 3 4"));
         Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+(* 2 3) (/ 10 2)) (+ 3 4)"));
@@ -100,7 +100,7 @@ public sealed class ParseTreeTests
     /// Tests handling of expressions containing invalid characters.
     /// </summary>
     [TestMethod]
-    public void UnexpectedChars()
+    public void ThrowFormatExceptionWhenUnexpectedCharactersEncountered()
     {
         Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+(* 2 a) (/ 10 2)) 3 4"));
         Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+(* 2 3() (/ 10 2)) 3 4"));
