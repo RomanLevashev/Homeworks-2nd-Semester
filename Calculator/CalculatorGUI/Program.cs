@@ -1,17 +1,23 @@
-namespace CalculatorGUI
+// <copyright file="Program.cs" company="Roman Levashev">
+// Copyright (c) Roman Levashev. All rights reserved.
+// Licensed under the MIT License.
+// </copyright>
+
+namespace CalculatorGUI;
+
+/// <summary>
+/// The main entry point class for the calculator application.
+/// This class contains the application entry point and startup configuration.
+/// </summary>
+internal static class Program
 {
-    internal static class Program
+    /// <summary>
+    ///  The main entry point for the application.
+    /// </summary>
+    [STAThread]
+    public static void Main()
     {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        static void Main()
-        {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
-            ApplicationConfiguration.Initialize();
-            Application.Run(new CalculatorForm());
-        }
+        ApplicationConfiguration.Initialize();
+        Application.Run(new CalculatorForm());
     }
 }

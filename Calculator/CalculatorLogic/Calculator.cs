@@ -1,162 +1,225 @@
-﻿namespace CalculatorLogic
+﻿// <copyright file="Calculator.cs" company="Roman Levashev">
+// Copyright (c) Roman Levashev. All rights reserved.
+// Licensed under the MIT License.
+// </copyright>
+
+namespace CalculatorLogic;
+
+using System.Globalization;
+using System.Numerics;
+using System.Text;
+
+/// <summary>
+/// Represents the core logic of a simple calculator that builds
+/// an expression and calculates its result in real-time.
+/// </summary>
+public class Calculator
 {
-    using System.Globalization;
-    using System.Numerics;
-    using System.Reflection.Metadata.Ecma335;
-    using System.Text;
+    private bool isDoubleMode = false;
+    private bool isWaitingForOperator = false;
+    private bool isPreviousANumber = false;
+    private List<string> tokens = [];
 
     /// <summary>
-    /// Represents the core logic of a simple calculator that builds
-    /// an expression and calculates its result in real-time.
+    /// Gets the current expression being built by the calculator.
     /// </summary>
-    public class Calculator
+    public StringBuilder Expression { get; private set; } = new();
+
+    /// <summary>
+    /// Gets the current calculated result that is displayed to the user.
+    /// </summary>
+    public string DisplayResult { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// Adds a digit character to the current expression.
+    /// </summary>
+    /// <param name="digit">The digit character to add. Must be between '0' and '9'.</param>
+    /// <returns>
+    /// <c>true</c> if the digit was successfully added to the display;
+    /// <c>false</c> if the digit is invalid or display length limit is exceeded.
+    /// </returns>
+    public bool AddDigit(char digit)
     {
-        private bool isDoubleMode = false;
-        private bool isWaitingForOperator = false;
-        private bool isPreviousANumber = false;
-
-        /// <summary>
-        /// Gets the current expression being built by the calculator.
-        /// </summary>
-        public StringBuilder Expression { get; private set; } = new StringBuilder();
-
-        /// <summary>
-        /// Gets the current calculated result that is displayed to the user.
-        /// </summary>
-        public string DisplayResult { get; private set; } = string.Empty;
-
-        /// <summary>
-        /// Updates the current expression based on the provided button type and character input,
-        /// and recalculates the result if necessary.
-        /// </summary>
-        /// <param name="elementType">The type of the button that was pressed (digit, operator, etc.).</param>
-        /// <param name="element">The character representing the input value.</param>
-        /// <returns>
-        /// /// A tuple containing:
-        /// - The updated expression string.
-        /// - The updated result string.
-        /// - A boolean indicating whether the expression changed.
-        /// </returns>
-        public (string newExpression, string displayResult, bool isChanged) UpdateExpression(ButtonType elementType, char element)
+        if (!(digit >= '0' && digit <= '9'))
         {
-            switch (elementType)
-            {
-                case ButtonType.Digit:
-
-                    this.Expression.Append(element);
-                    this.isPreviousANumber = true;
-                    this.isWaitingForOperator = true;
-                    this.CalculateExpression();
-                    break;
-
-                case ButtonType.Operator:
-                    if (!this.isWaitingForOperator)
-                    {
-                        return (string.Empty, string.Empty, false);
-                    }
-
-                    this.Expression.Append(' ');
-                    this.Expression.Append(element);
-                    this.Expression.Append(' ');
-                    this.isPreviousANumber = false;
-                    this.isWaitingForOperator = false;
-                    break;
-
-                case ButtonType.Comma:
-                    if (!this.isPreviousANumber)
-                    {
-                        return (string.Empty, string.Empty, false);
-                    }
-
-                    this.isDoubleMode = true;
-                    this.Expression.Append(element);
-                    this.isPreviousANumber = false;
-                    this.isWaitingForOperator = false;
-                    break;
-
-                case ButtonType.Delete:
-                    int deleteCount = this.Expression.Length > 1 && this.Expression[^1] == ' ' ? 2 : 1;
-                    if (this.Expression.Length > 0)
-                    {
-                        this.Expression.Remove(this.Expression.Length - deleteCount, deleteCount);
-                        this.CalculateExpression();
-                    }
-
-                    break;
-            }
-
-            return (this.Expression.ToString(), this.DisplayResult, true);
+            return false;
         }
 
-        private void CalculateExpression()
+        this.Expression.Append(digit);
+        this.isWaitingForOperator = true;
+        if (this.isPreviousANumber || (this.tokens.Count > 0 && this.tokens[^1].Contains(',')))
         {
-            string expression = this.Expression.ToString();
-
-            if (expression == string.Empty)
-            {
-                this.DisplayResult = string.Empty;
-                return;
-            }
-
-            string[] tokens = expression.Split(' ');
-            double currentResult = 0;
-            char previousOperator = '\0';
-
-            foreach (string token in tokens)
-            {
-                if (double.TryParse(token, new CultureInfo("ru-RU"), out double temp))
-                {
-                    if (currentResult == 0 && previousOperator == '\0')
-                    {
-                        currentResult = temp;
-                        continue;
-                    }
-
-                    switch (previousOperator)
-                    {
-                        case '+':
-                            currentResult += temp;
-                            break;
-
-                        case '−':
-                            currentResult -= temp;
-                            break;
-
-                        case '×':
-                            currentResult *= temp;
-                            break;
-
-                        case '÷':
-                            if (temp == 0)
-                            {
-                                this.DisplayResult = "ZeroDivisionError";
-                                return;
-                            }
-
-                            currentResult /= temp;
-                            if (Math.Floor(currentResult) != currentResult)
-                            {
-                                this.isDoubleMode = true;
-                            }
-
-                            break;
-                    }
-                }
-
-                if (token.Length == 1 && "×+−÷".Contains(token))
-                {
-                    previousOperator = token[0];
-                }
-            }
-
-            if (!this.isDoubleMode)
-            {
-                BigInteger result = (BigInteger)currentResult;
-                this.DisplayResult = result.ToString(new CultureInfo("ru-RU"));
-                return;
-            }
-
-            this.DisplayResult = currentResult.ToString(new CultureInfo("ru-RU"));
+            this.tokens[^1] = this.tokens[^1] + digit;
         }
+        else
+        {
+            this.tokens.Add(digit.ToString());
+        }
+
+        this.isPreviousANumber = true;
+        this.CalculateExpression();
+        return true;
+    }
+
+    /// <summary>
+    /// Adds a decimal point to the current expression.
+    /// </summary>
+    /// <returns>
+    /// <c>true</c> if the decimal point was successfully added;
+    /// <c>false</c> if a decimal point already exists or display is at maximum length.
+    /// </returns>
+    public bool AddComma()
+    {
+        if (!this.isPreviousANumber)
+        {
+            return false;
+        }
+
+        this.Expression.Append(',');
+        this.tokens[^1] = this.tokens[^1] + ',';
+        this.isPreviousANumber = false;
+        this.isWaitingForOperator = false;
+        this.isDoubleMode = true;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Adds an arithmetic operator for pending calculation.
+    /// </summary>
+    /// <param name="op">The operator character. Valid values: '+', '-', '*', '/'.</param>
+    /// <returns>
+    /// <c>true</c> if the operator was successfully set;
+    /// <c>false</c> if the operator is invalid or there's an existing pending operation.
+    /// </returns>
+    public bool AddOperator(char op)
+    {
+        if (!"×−+÷".Contains(op))
+        {
+            return false;
+        }
+
+        if (!this.isWaitingForOperator)
+        {
+            return false;
+        }
+
+        this.Expression.Append(' ');
+        this.Expression.Append(op);
+        this.Expression.Append(' ');
+        this.isPreviousANumber = false;
+        this.isWaitingForOperator = false;
+        this.tokens.Add(op.ToString());
+
+        return true;
+    }
+
+    /// <summary>
+    /// Deletes the last character from the current display value.
+    /// </summary>
+    /// <returns>
+    /// <c>true</c> if a character was successfully deleted;
+    /// <c>false</c> if the display is already at minimum length or cannot be deleted further.
+    /// </returns>
+    public bool Delete()
+    {
+        if (this.Expression.Length == 0)
+        {
+            return false;
+        }
+
+        int deleteCount = this.Expression[^1] == ' ' ? 3 : 1;
+        this.Expression.Remove(this.Expression.Length - deleteCount, deleteCount);
+
+        if (this.tokens[^1].Length > 1)
+        {
+            this.tokens[^1] = this.tokens[^1].Substring(0, this.tokens[^1].Length - 1);
+        }
+        else
+        {
+            if (this.tokens[^1][^1] >= '0' && this.tokens[^1][^1] <= '9')
+            {
+                this.isWaitingForOperator = false;
+                this.isPreviousANumber = false;
+            }
+            else
+            {
+                this.isPreviousANumber = true;
+                this.isWaitingForOperator = true;
+            }
+
+            this.tokens.RemoveAt(this.tokens.Count - 1);
+        }
+
+        this.CalculateExpression();
+        return true;
+    }
+
+    private void CalculateExpression()
+    {
+        if (this.tokens.Count == 0)
+        {
+            this.DisplayResult = string.Empty;
+            return;
+        }
+
+        double currentResult = 0;
+        char previousOperator = '\0';
+
+        foreach (string token in this.tokens)
+        {
+            if (double.TryParse(token, new CultureInfo("ru-RU"), out double temp))
+            {
+                if (currentResult == 0 && previousOperator == '\0')
+                {
+                    currentResult = temp;
+                    continue;
+                }
+
+                switch (previousOperator)
+                {
+                    case '+':
+                        currentResult += temp;
+                        break;
+
+                    case '−':
+                        currentResult -= temp;
+                        break;
+
+                    case '×':
+                        currentResult *= temp;
+                        break;
+
+                    case '÷':
+                        if (temp == 0)
+                        {
+                            this.DisplayResult = "ZeroDivisionError";
+                            return;
+                        }
+
+                        currentResult /= temp;
+                        if (Math.Floor(currentResult) != currentResult)
+                        {
+                            this.isDoubleMode = true;
+                        }
+
+                        break;
+                }
+            }
+
+            if (token.Length == 1 && "×+−÷".Contains(token))
+            {
+                previousOperator = token[0];
+            }
+        }
+
+        if (!this.isDoubleMode)
+        {
+            BigInteger result = (BigInteger)currentResult;
+            this.DisplayResult = result.ToString(new CultureInfo("ru-RU"));
+            return;
+        }
+
+        this.DisplayResult = currentResult.ToString(new CultureInfo("ru-RU"));
     }
 }
