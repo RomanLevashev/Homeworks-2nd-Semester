@@ -20,7 +20,7 @@ public class LZW
     /// <returns>
     /// The compression ratio, which is the ratio of the original file size to the compressed file size.
     /// </returns>
-    public static long CompressFile(string inputPath)
+    public static double CompressFile(string inputPath)
     {
         FileInfo fileInfo = new(inputPath);
         long inputSize = fileInfo.Length;

@@ -59,8 +59,8 @@ public class EncodeDataHandler(FileStream inputFileStream, FileStream outputFile
         if (numBitsNeeded > this.ChunkSize)
         {
             throw new InvalidOperationException(
-            $"Number {num} requires {numBitsNeeded} bits but current chunk size is only {this.ChunkSize} bits. " +
-            "The number is too large for the current encoding settings.");
+                $"Number {num} requires {numBitsNeeded} bits but current chunk size is only {this.ChunkSize} bits. " +
+                "The number is too large for the current encoding settings.");
         }
 
         int leadingZeros = this.ChunkSize - numBitsNeeded;
@@ -69,20 +69,10 @@ public class EncodeDataHandler(FileStream inputFileStream, FileStream outputFile
             this.bitBuffer.Enqueue(false);
         }
 
-        if (num > 0)
+        for (int i = numBitsNeeded - 1; i >= 0; i--)
         {
-            for (int i = numBitsNeeded - 1; i >= 0; i--)
-            {
-                bool bit = (num & (1u << i)) != 0;
-                this.bitBuffer.Enqueue(bit);
-            }
-        }
-        else
-        {
-            for (int i = 0; i < this.ChunkSize; i++)
-            {
-                this.bitBuffer.Enqueue(false);
-            }
+            bool bit = (num & (1u << i)) != 0;
+            this.bitBuffer.Enqueue(bit);
         }
 
         this.FillOutputBuffer();
@@ -106,19 +96,19 @@ public class EncodeDataHandler(FileStream inputFileStream, FileStream outputFile
     {
         while (this.bitBuffer.Count >= 8)
         {
-            if (this.outputBuffer.Count >= this.bufferSize)
-            {
-                this.outputFileStream.Write(this.outputBuffer.ToArray());
-                this.outputBuffer.Clear();
-            }
-
-            bool[] bitArray = new bool[8];
+            var bitArray = new bool[8];
             for (int i = 0; i < 8; i++)
             {
                 bitArray[i] = this.bitBuffer.Dequeue();
             }
 
             this.outputBuffer.Add(this.ConvertToByte(bitArray));
+        }
+
+        if (this.outputBuffer.Count >= this.bufferSize)
+        {
+            this.outputFileStream.Write(this.outputBuffer.ToArray());
+            this.outputBuffer.Clear();
         }
     }
 

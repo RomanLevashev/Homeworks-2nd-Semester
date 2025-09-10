@@ -18,7 +18,7 @@ switch (operation)
 {
     case "-c":
         Console.WriteLine($"Compressing file: {filePath}");
-        long compressionRatio = LZW.CompressFile(filePath);
+        var compressionRatio = LZW.CompressFile(filePath);
         Console.WriteLine($"Compression ratio: {compressionRatio}");
         break;
     case "-u":

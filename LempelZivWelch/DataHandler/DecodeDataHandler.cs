@@ -25,10 +25,7 @@ public class DecodeDataHandler(FileStream inputFileStream, FileStream outputFile
     /// <summary>
     /// Gets a value indicating whether both the file read operation is complete and the bit buffer contains less data than the chunk size.
     /// </summary>
-    public override bool IsFileReadComplete
-    {
-        get => base.IsFileReadComplete && this.bitBuffer.Count < this.ChunkSize;
-    }
+    public override bool IsFileReadComplete => base.IsFileReadComplete && this.bitBuffer.Count < this.ChunkSize;
 
     /// <summary>
     /// Gets or sets the number of bits to read for each code during decoding.
