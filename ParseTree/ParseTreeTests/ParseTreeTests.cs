@@ -1,0 +1,111 @@
+﻿// <copyright file="ParseTreeTests.cs" company="Roman Levashev">
+// Copyright (c) Roman Levashev. All rights reserved.
+// Licensed under the MIT License.
+// </copyright>
+
+namespace ParseTreeTests;
+
+using ParseTree;
+
+/// <summary>
+/// Contains unit tests for the parse tree.
+/// </summary>
+[TestClass]
+public sealed class ParseTreeTests
+{
+    /// <summary>
+    /// Tests evaluation of correctly formatted expressions.
+    /// </summary>
+    [TestMethod]
+    public void ParseAndEvaluateCorrectExpressionsSuccessfully()
+    {
+        Assert.AreEqual(3, DataHandler.Parse("(+ 1 2)").Evaluate());
+        Assert.AreEqual(2, DataHandler.Parse("(- 5 3)").Evaluate());
+        Assert.AreEqual(6, DataHandler.Parse("(* 2 3)").Evaluate());
+        Assert.AreEqual(5, DataHandler.Parse("(/ 10 2)").Evaluate());
+        Assert.AreEqual(11, DataHandler.Parse("(+ (* 2 3) (/ 10 2))").Evaluate());
+        Assert.AreEqual(9, DataHandler.Parse("(- (* 3 4) (+ 1 2))").Evaluate());
+        Assert.AreEqual(5, DataHandler.Parse("(/ (* (+ 1 2) 5) 3)").Evaluate());
+        Assert.AreEqual(15, DataHandler.Parse("(+ (* (- 5 1) (/ 6 2)) 3)").Evaluate());
+        Assert.AreEqual(15, DataHandler.Parse("(* (+ 1 (/ 8 2)) (- 7 4))").Evaluate());
+        Assert.AreEqual(0, DataHandler.Parse("(+ 0 0)").Evaluate());
+        Assert.AreEqual(10, DataHandler.Parse("(* 1 10)").Evaluate());
+        Assert.AreEqual(-3, DataHandler.Parse("(- -5 -2)").Evaluate());
+        Assert.AreEqual(10, DataHandler.Parse("(/ 10 1)").Evaluate());
+        Assert.AreEqual(11, DataHandler.Parse("(+ (* 3 (+ 1 2)) (/ (- 10 2) 4))").Evaluate());
+        Assert.AreEqual(6, DataHandler.Parse("(- (* (+ 1 3) (/ 10 5)) 2)").Evaluate());
+    }
+
+    /// <summary>
+    /// Tests handling of expressions with missing whitespace between tokens.
+    /// </summary>
+    [TestMethod]
+    public void ThrowFormatExceptionWhenMissingWhitespaceBetweenTokens()
+    {
+        Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+(* 23) (/ 10 2))"));
+    }
+
+    /// <summary>
+    /// Tests parsing of single number expressions.
+    /// </summary>
+    [TestMethod]
+    public void ParseAndEvaluateSingleNumberExpressionCorrectly()
+    {
+        Assert.AreEqual(5, DataHandler.Parse("5").Evaluate());
+    }
+
+    /// <summary>
+    /// Tests handling of empty and null input strings.
+    /// </summary>
+    [TestMethod]
+    public void ThrowExceptionWhenInputIsEmptyOrNull()
+    {
+        Assert.ThrowsException<FormatException>(() => DataHandler.Parse(string.Empty));
+        Assert.ThrowsException<ArgumentNullException>(() => DataHandler.Parse(null!));
+    }
+
+    /// <summary>
+    /// Tests detection of incomplete expressions with missing operands.
+    /// </summary>
+    [TestMethod]
+    public void ThrowFormatExceptionWhenOperatorMissingOperands()
+    {
+        Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+ 5)"));
+        Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+ )"));
+        Assert.ThrowsException<FormatException>(() => DataHandler.Parse("((+ 5 3 ) -)"));
+    }
+
+    /// <summary>
+    /// Tests detection of syntax errors with missing parentheses.
+    /// </summary>
+    [TestMethod]
+    public void ThrowFormatExceptionWhenParenthesesAreMissing()
+    {
+        Assert.ThrowsException<FormatException>(() => DataHandler.Parse("+ 5 9"));
+        Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+ + 3 5 8)"));
+    }
+
+    /// <summary>
+    /// Tests detection of expressions with extra trailing tokens.
+    /// </summary>
+    [TestMethod]
+    public void ThrowFormatExceptionWhenExtraTrailingTokensPresent()
+    {
+        Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+(* 2 3) (/ 10 2)) 3 4"));
+        Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+(* 2 3) (/ 10 2)) (+ 3 4)"));
+        Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+ 1 2) 3"));
+    }
+
+    /// <summary>
+    /// Tests handling of expressions containing invalid characters.
+    /// </summary>
+    [TestMethod]
+    public void ThrowFormatExceptionWhenUnexpectedCharactersEncountered()
+    {
+        Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+(* 2 a) (/ 10 2)) 3 4"));
+        Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+(* 2 3() (/ 10 2)) 3 4"));
+        Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(+ asd 5 4)"));
+        Assert.ThrowsException<FormatException>(() => DataHandler.Parse("asd (+ 4 5)"));
+        Assert.ThrowsException<FormatException>(() => DataHandler.Parse("(& 4 5)"));
+    }
+}
