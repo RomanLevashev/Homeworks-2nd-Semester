@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="ru" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Алгоритм LZW — Викиконспекты</title>
+<script>document.documentElement.className = document.documentElement.className.replace( /(^|\s)client-nojs(\s|$)/, "$1client-js$2" );</script>
+<script>(window.RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Алгоритм_LZW","wgTitle":"Алгоритм LZW","wgCurRevisionId":84779,"wgRevisionId":84779,"wgArticleId":567,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Дискретная математика и алгоритмы","Алгоритмы сжатия"],"wgBreakFrames":false,"wgPageContentLanguage":"ru","wgPageContentModel":"wikitext","wgSeparatorTransformTable":[",\t."," \t,"],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"],"wgMonthNamesShort":["","янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"],"wgRelevantPageName":"Алгоритм_LZW","wgRelevantArticleId":567,"wgRequestId":"8a7080b63bded5f379ddd6cf","wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgPreferredVariant":"ru","wgMFExpandAllSectionsUserOption":false,"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgSmjSize":110,"wgSmjUseChem":true,"wgSmjInlineMath":[["$","$"],["[math]","[/math]"]]});mw.loader.state({"site.styles":"ready","noscript":"ready","user.styles":"ready","user":"ready","user.options":"loading","user.tokens":"loading","mediawiki.legacy.shared":"ready","mediawiki.legacy.commonPrint":"ready","mediawiki.sectionAnchor":"ready","mediawiki.skinning.interface":"ready","skins.vector.styles":"ready"});mw.loader.implement("user.options@1dzjbvu",function($,jQuery,require,module){mw.user.options.set({"variant":"ru"});});mw.loader.implement("user.tokens@0qjj0qn",function ( $, jQuery, require, module ) {
+mw.user.tokens.set({"editToken":"+\\","patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});/*@nomin*/
+
+});mw.loader.load(["ext.SmjLocal","site","mediawiki.page.startup","mediawiki.user","mediawiki.hidpi","mediawiki.page.ready","mediawiki.toc","mediawiki.searchSuggest","skins.vector.js"]);});</script>
+<link rel="stylesheet" href="/wiki/load.php?debug=false&amp;lang=ru&amp;modules=mediawiki.legacy.commonPrint%2Cshared%7Cmediawiki.sectionAnchor%7Cmediawiki.skinning.interface%7Cskins.vector.styles&amp;only=styles&amp;skin=vector"/>
+<script async="" src="/wiki/load.php?debug=false&amp;lang=ru&amp;modules=startup&amp;only=scripts&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<meta name="generator" content="MediaWiki 1.30.0"/>
+<link rel="shortcut icon" href="/favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="/wiki/opensearch_desc.php" title="Викиконспекты (ru)"/>
+<link rel="EditURI" type="application/rsd+xml" href="http://neerc.ifmo.ru/wiki/api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="Викиконспекты — Atom-лента" href="/wiki/index.php?title=%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%A1%D0%B2%D0%B5%D0%B6%D0%B8%D0%B5_%D0%BF%D1%80%D0%B0%D0%B2%D0%BA%D0%B8&amp;feed=atom"/>
+<!--[if lt IE 9]><script src="/resources/lib/html5shiv/html5shiv.min.js"></script><![endif]-->
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Алгоритм_LZW rootpage-Алгоритм_LZW skin-vector action-view">		<div id="mw-page-base" class="noprint"></div>
+		<div id="mw-head-base" class="noprint"></div>
+		<div id="content" class="mw-body" role="main">
+			<a id="top"></a>
+
+						<div class="mw-indicators mw-body-content">
+</div>
+			<h1 id="firstHeading" class="firstHeading" lang="ru">Алгоритм LZW</h1>
+									<div id="bodyContent" class="mw-body-content">
+									<div id="siteSub" class="noprint">Материал из Викиконспекты</div>
+								<div id="contentSub"></div>
+												<div id="jump-to-nav" class="mw-jump">
+					Перейти к:					<a href="#mw-head">навигация</a>, 					<a href="#p-search">поиск</a>
+				</div>
+				<div id="mw-content-text" lang="ru" dir="ltr" class="mw-content-ltr"><div class="mw-parser-output"><p>Непосредственным предшественником LZW является <a href="/wiki/index.php?title=%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC%D1%8B_LZ77_%D0%B8_LZ78" title="Алгоритмы LZ77 и LZ78">алгоритм LZ78</a>, опубликованный Абрахамом Лемпелем (<i>Abraham Lempel</i>) и Якобом Зивом (<i>Jacob Ziv</i>) в 1978 г. Этот алгоритм воспринимался как математическая абстракция до 1984 г., когда Терри Уэлч (<i>Terry A. Welch</i>) опубликовал свою работу с модифицированным алгоритмом, получившим в дальнейшем название LZW (<i>Lempel—Ziv—Welch</i>).
+</p>
+<div id="toc" class="toc"><div class="toctitle"><h2>Содержание</h2></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="#.D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D0.BD.D0.B5.D0.BD.D0.B8.D0.B5"><span class="tocnumber">1</span> <span class="toctext">Применение</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="#.D0.9E.D0.BF.D0.B8.D1.81.D0.B0.D0.BD.D0.B8.D0.B5"><span class="tocnumber">2</span> <span class="toctext">Описание</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="#.D0.90.D0.BB.D0.B3.D0.BE.D1.80.D0.B8.D1.82.D0.BC"><span class="tocnumber">3</span> <span class="toctext">Алгоритм</span></a>
+<ul>
+<li class="toclevel-2 tocsection-4"><a href="#.D0.9A.D0.BE.D0.B4.D0.B8.D1.80.D0.BE.D0.B2.D0.B0.D0.BD.D0.B8.D0.B5"><span class="tocnumber">3.1</span> <span class="toctext">Кодирование</span></a></li>
+<li class="toclevel-2 tocsection-5"><a href="#.D0.94.D0.B5.D0.BA.D0.BE.D0.B4.D0.B8.D1.80.D0.BE.D0.B2.D0.B0.D0.BD.D0.B8.D0.B5"><span class="tocnumber">3.2</span> <span class="toctext">Декодирование</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-6"><a href="#.D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80"><span class="tocnumber">4</span> <span class="toctext">Пример</span></a>
+<ul>
+<li class="toclevel-2 tocsection-7"><a href="#.D0.9A.D0.BE.D0.B4.D0.B8.D1.80.D0.BE.D0.B2.D0.B0.D0.BD.D0.B8.D0.B5_2"><span class="tocnumber">4.1</span> <span class="toctext">Кодирование</span></a></li>
+<li class="toclevel-2 tocsection-8"><a href="#.D0.94.D0.B5.D0.BA.D0.BE.D0.B4.D0.B8.D1.80.D0.BE.D0.B2.D0.B0.D0.BD.D0.B8.D0.B5_2"><span class="tocnumber">4.2</span> <span class="toctext">Декодирование</span></a></li>
+<li class="toclevel-2 tocsection-9"><a href="#.D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.87.D0.B0.D0.BD.D0.B8.D0.B5"><span class="tocnumber">4.3</span> <span class="toctext">Примечание</span></a></li>
+<li class="toclevel-2 tocsection-10"><a href="#.D0.9F.D1.80.D0.B5.D0.B8.D0.BC.D1.83.D1.89.D0.B5.D1.81.D1.82.D0.B2.D0.B0_.D0.B0.D0.BB.D0.B3.D0.BE.D1.80.D0.B8.D1.82.D0.BC.D0.B0_LZW"><span class="tocnumber">4.4</span> <span class="toctext">Преимущества алгоритма LZW</span></a></li>
+<li class="toclevel-2 tocsection-11"><a href="#.D0.9D.D0.B5.D0.B4.D0.BE.D1.81.D1.82.D0.B0.D1.82.D0.BA.D0.B8_.D0.B0.D0.BB.D0.B3.D0.BE.D1.80.D0.B8.D1.82.D0.BC.D0.B0_LZW"><span class="tocnumber">4.5</span> <span class="toctext">Недостатки алгоритма LZW</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-12"><a href="#.D0.98.D1.81.D1.82.D0.BE.D1.87.D0.BD.D0.B8.D0.BA.D0.B8_.D0.B8.D0.BD.D1.84.D0.BE.D1.80.D0.BC.D0.B0.D1.86.D0.B8.D0.B8"><span class="tocnumber">5</span> <span class="toctext">Источники информации</span></a></li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D0.BD.D0.B5.D0.BD.D0.B8.D0.B5">Применение</span></h2>
+<p>Опубликование алгоритма LZW произвело большое впечатление на всех специалистов по сжатию информации. За этим последовало большое количество программ и приложений с различными вариантами этого метода. 
+</p><p>Этот метод позволяет достичь одну из наилучших степеней сжатия среди других существующих методов сжатия графических данных, при полном отсутствии потерь или искажений в исходных файлах. В настоящее время используется в файлах формата TIFF, PDF, GIF, PostScript и других, а также отчасти во многих популярных программах сжатия данных (ZIP, ARJ, LHA).
+</p>
+<h2><span class="mw-headline" id=".D0.9E.D0.BF.D0.B8.D1.81.D0.B0.D0.BD.D0.B8.D0.B5">Описание</span></h2>
+<p>Процесс сжатия выглядит следующим образом: последовательно считываются символы входного потока и происходит проверка, существует ли в созданной таблице строк такая строка. Если такая строка существует, считывается следующий символ, а если строка не существует, в поток заносится код для предыдущей найденной строки, строка заносится в таблицу, а поиск начинается снова. 
+</p><p>Например, если сжимают байтовые данные (текст), то строк в таблице окажется  <span style='display:none'>[math]256[/math]</span> (от <span style='display:none'>[math]"0"[/math]</span> до <span style='display:none'>[math]"255"[/math]</span>). Если используется <span style='display:none'>[math]10[/math]</span>-битный код, то под коды для строк остаются значения в диапазоне от <span style='display:none'>[math]256[/math]</span> до <span style='display:none'>[math]1023[/math]</span>. Новые строки формируют таблицу последовательно, т. е. можно считать индекс строки ее кодом. 
+</p><p>Для декодирования на вход подается только закодированный текст, поскольку алгоритм LZW может воссоздать соответствующую таблицу преобразования непосредственно по закодированному тексту. 
+Алгоритм генерирует однозначно декодируемый код за счет того, что каждый раз, когда генерируется новый код, новая строка добавляется в таблицу строк. LZW постоянно проверяет, является ли строка уже известной, и, если так, выводит существующий код без генерации нового. 
+Таким образом, каждая строка будет храниться в единственном экземпляре и иметь свой уникальный номер. Следовательно, при декодировании во время получения нового кода генерируется новая строка, а при получении уже известного, строка извлекается из словаря.
+</p>
+<h2><span class="mw-headline" id=".D0.90.D0.BB.D0.B3.D0.BE.D1.80.D0.B8.D1.82.D0.BC">Алгоритм</span></h2>
+<h3><span class="mw-headline" id=".D0.9A.D0.BE.D0.B4.D0.B8.D1.80.D0.BE.D0.B2.D0.B0.D0.BD.D0.B8.D0.B5">Кодирование</span></h3>
+<ul><li> Начало.</li>
+<li> <b> Шаг  1. </b> Все возможные символы заносятся в словарь. Во входную фразу <span style='display:none'>[math]X[/math]</span> заносится первый символ сообщения.</li>
+<li> <b> Шаг 2. </b> Считать очередной символ <span style='display:none'>[math]Y[/math]</span> из сообщения.</li>
+<li> <b> Шаг 3. </b> Если <span style='display:none'>[math]Y[/math]</span> — это символ конца сообщения, то выдать код для <span style='display:none'>[math]X[/math]</span>, иначе: 
+<ul><li> Если фраза <span style='display:none'>[math]XY[/math]</span> уже имеется в словаре, то присвоить входной фразе значение <span style='display:none'>[math]XY[/math]</span> и перейти к <b> Шагу 2 </b>, </li>
+<li> Иначе выдать код для входной фразы <span style='display:none'>[math]X[/math]</span>, добавить <span style='display:none'>[math]XY[/math]</span> в словарь и присвоить входной фразе значение <span style='display:none'>[math]Y[/math]</span>. Перейти к <b> Шагу 2. </b></li></ul></li>
+<li> Конец.</li></ul>
+<h3><span class="mw-headline" id=".D0.94.D0.B5.D0.BA.D0.BE.D0.B4.D0.B8.D1.80.D0.BE.D0.B2.D0.B0.D0.BD.D0.B8.D0.B5">Декодирование</span></h3>
+<ul><li> Начало.</li>
+<li> <b> Шаг 1. </b> Все возможные символы заносятся в словарь. Во входную фразу <span style='display:none'>[math]X[/math]</span> заносится первый код декодируемого сообщения.</li>
+<li> <b> Шаг 2. </b> Считать очередной код <span style='display:none'>[math]Y[/math]</span> из сообщения.</li>
+<li> <b> Шаг 3. </b> Если <span style='display:none'>[math]Y[/math]</span> — это конец сообщения, то выдать символ, соответствующий коду <span style='display:none'>[math]X[/math]</span>, иначе: 
+<ul><li> Если фразы под кодом <span style='display:none'>[math]XY[/math]</span> нет в словаре, вывести фразу, соответствующую коду <span style='display:none'>[math]X[/math]</span>, а фразу с кодом <span style='display:none'>[math]XY[/math]</span> занести в словарь. </li>
+<li> Иначе присвоить входной фразе код <span style='display:none'>[math]XY[/math]</span> и перейти к <b> Шагу 2 </b>.</li></ul></li>
+<li> Конец.</li></ul>
+<h2><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.80">Пример</span></h2>
+<p>Рассмотрим пример сжатия и декодирования сообщения. 
+Сначала создадим начальный словарь единичных символов. В стандартной кодировке ASCII имеется <span style='display:none'>[math]256[/math]</span> различных символов, поэтому, для того, чтобы все они были корректно закодированы (если нам неизвестно, какие символы будут присутствовать в исходном файле, а какие — нет), начальный размер кода будет равен <span style='display:none'>[math]8[/math]</span> битам. Если нам заранее известно, что в исходном файле будет меньшее количество различных символов, то вполне разумно уменьшить количество бит. Чтобы инициализировать таблицу, мы установим соответствие кода <span style='display:none'>[math]0[/math]</span> соответствующему символу с битовым кодом <span style='display:none'>[math]00000000[/math]</span>, тогда <span style='display:none'>[math]1[/math]</span>
+соответствует символу с кодом <span style='display:none'>[math]00000001[/math]</span>, и т.д., до кода <span style='display:none'>[math]255[/math]</span>.
+</p>
+<table class="wikitable" border="1," style="float:right; text-align: right; margin-left: auto; margin-right: auto;">
+
+<tr bgcolor="#EEEEEE">
+<th> Символ </th>
+<th> Битовый код </th>
+<th> Код
+</th></tr>
+<tr>
+<td> a </td>
+<td> 000 </td>
+<td> 0
+</td></tr>
+<tr>
+<td> b </td>
+<td> 001 </td>
+<td> 1
+</td></tr>
+<tr>
+<td> c </td>
+<td> 010 </td>
+<td> 2
+</td></tr>
+<tr>
+<td> d </td>
+<td> 011 </td>
+<td> 3
+</td></tr>
+<tr>
+<td> e </td>
+<td> 100 </td>
+<td> 4
+</td></tr></table>
+<p>Больше в таблице не будет других кодов, обладающих этим свойством.<br />
+По мере роста словаря, размер групп должен расти, с тем чтобы учесть новые элементы. <span style='display:none'>[math]8[/math]</span>-битные группы дают <span style='display:none'>[math]256[/math]</span> возможных комбинации бит, поэтому, когда в словаре появится <span style='display:none'>[math]256[/math]</span>-е слово, алгоритм должен перейти к <span style='display:none'>[math]9[/math]</span>-битным группам. При появлении <span style='display:none'>[math]512[/math]</span>-ого слова произойдет переход к <span style='display:none'>[math]10[/math]</span>-битным группам, что дает возможность запоминать уже <span style='display:none'>[math]1024[/math]</span> слова и т.д.
+</p><p>В нашем примере алгоритму заранее известно о том, что будет использоваться всего <span style='display:none'>[math]5[/math]</span> различных символов, следовательно, для их хранения будет использоваться минимальное количество бит, позволяющее нам их запомнить, то есть <span style='display:none'>[math]3[/math]</span> (<span style='display:none'>[math]8[/math]</span> различных комбинаций).
+</p>
+<h3><span class="mw-headline" id=".D0.9A.D0.BE.D0.B4.D0.B8.D1.80.D0.BE.D0.B2.D0.B0.D0.BD.D0.B8.D0.B5_2">Кодирование</span></h3>
+<p>Пусть мы сжимаем последовательность <span style='display:none'>[math]abacabadabacabae[/math]</span>.
+</p>
+<ul><li> <b>Шаг 1: </b>Тогда, согласно изложенному выше алгоритму, мы добавим к изначально пустой строке <span style='display:none'>[math]a[/math]</span> и проверим, есть ли строка <span style='display:none'>[math]a[/math]</span> в таблице. Поскольку мы при инициализации занесли в таблицу все строки из одного символа, то строка <span style='display:none'>[math]a[/math]</span> есть в таблице. </li>
+<li> <b>Шаг 2: </b>Далее мы читаем следующий символ <span style='display:none'>[math]b[/math]</span> из входного потока и проверяем, есть ли строка <span style='display:none'>[math]ab[/math]</span> в таблице. Такой строки в таблице пока нет.</li></ul>
+<p>Добавляем в таблицу <span style='display:none'>[math]\langle5\rangle[/math]</span> <span style='display:none'>[math]ab[/math]</span>. В поток: <span style='display:none'>[math]\langle0\rangle[/math]</span>;
+</p>
+<ul><li> <b>Шаг 3: </b><span style='display:none'>[math]ba[/math]</span> — нет. В таблицу: <span style='display:none'>[math]\langle6\rangle[/math]</span> <span style='display:none'>[math]ba[/math]</span>. В поток: <span style='display:none'>[math]\langle1\rangle[/math]</span>;</li>
+<li> <b>Шаг 4: </b><span style='display:none'>[math]ac[/math]</span> — нет. В таблицу: <span style='display:none'>[math]\langle7\rangle[/math]</span> <span style='display:none'>[math]ac[/math]</span>. В поток: <span style='display:none'>[math]\langle0\rangle[/math]</span>;</li>
+<li> <b>Шаг 5: </b><span style='display:none'>[math]ca[/math]</span> — нет. В таблицу: <span style='display:none'>[math]\langle8\rangle[/math]</span> <span style='display:none'>[math]ca[/math]</span>. В поток: <span style='display:none'>[math]\langle2\rangle[/math]</span>;</li>
+<li> <b>Шаг 6: </b><span style='display:none'>[math]ab[/math]</span> — есть в таблице; <span style='display:none'>[math]aba[/math]</span> — нет. В таблицу: <span style='display:none'>[math]\langle9\rangle[/math]</span> <span style='display:none'>[math]aba[/math]</span>. В поток: <span style='display:none'>[math]\langle5\rangle[/math]</span>;</li>
+<li> <b>Шаг 7: </b><span style='display:none'>[math]ad[/math]</span> — нет. В таблицу: <span style='display:none'>[math]\langle10\rangle[/math]</span> <span style='display:none'>[math]ad[/math]</span>. В поток: <span style='display:none'>[math]\langle0\rangle[/math]</span>;</li>
+<li> <b>Шаг 8: </b><span style='display:none'>[math]da[/math]</span> — нет. В таблицу: <span style='display:none'>[math]\langle11\rangle[/math]</span> <span style='display:none'>[math]da[/math]</span>. В поток: <span style='display:none'>[math]\langle3\rangle[/math]</span>;</li>
+<li> <b>Шаг 9: </b><span style='display:none'>[math]aba[/math]</span> — есть в таблице; <span style='display:none'>[math]abac[/math]</span> — нет. В таблицу: <span style='display:none'>[math]\langle12\rangle[/math]</span> <span style='display:none'>[math]abac[/math]</span>. В поток: <span style='display:none'>[math]\langle9\rangle[/math]</span>;</li>
+<li> <b>Шаг 10: </b><span style='display:none'>[math]ca[/math]</span> — есть в таблице; <span style='display:none'>[math]cab[/math]</span> — нет. В таблицу: <span style='display:none'>[math]\langle13\rangle[/math]</span> <span style='display:none'>[math]cab[/math]</span>. В поток: <span style='display:none'>[math]\langle8\rangle[/math]</span>;</li>
+<li> <b>Шаг 11: </b><span style='display:none'>[math]ba[/math]</span> — есть в таблице; <span style='display:none'>[math]bae[/math]</span> — нет. В таблицу: <span style='display:none'>[math]\langle14\rangle[/math]</span> <span style='display:none'>[math]bae[/math]</span>. В поток: <span style='display:none'>[math]\langle6\rangle[/math]</span>;</li>
+<li> <b>Шаг 12: </b>И, наконец последняя строка <span style='display:none'>[math]e[/math]</span>, за ней идет конец сообщения, поэтому мы просто выводим в поток <span style='display:none'>[math]\langle4\rangle[/math]</span>.</li></ul>
+<table class="wikitable" border="1," style="text-align: center; margin-left: auto; margin-right: auto;">
+
+<tr bgcolor="#EEEEEE">
+<th scope="col" width="6em" rowspan="2"> Текущая строка
+</th>
+<th scope="col" width="6em" rowspan="2"> Текущий символ
+</th>
+<th scope="col" width="4em" rowspan="2"> Следующий символ
+</th>
+<th colspan="2"> Вывод
+</th>
+<th scope="col" width="7em" rowspan="2" colspan="2"> Словарь
+</th></tr>
+<tr bgcolor="#EEEEEE">
+<th>  Код  </th>
+<th> Биты
+</th></tr>
+<tr>
+<td style="text-align: center;"> ab
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> b
+</td>
+<td> 0 </td>
+<td> 000
+</td>
+<td style="border-right: none;"> 5:
+</td>
+<td style="border-left: none;"> ab
+</td></tr>
+<tr>
+<td style="text-align: center;"> ba
+</td>
+<td style="text-align: center;"> b
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> 1 </td>
+<td> 001
+</td>
+<td style="border-right: none;"> 6:
+</td>
+<td style="border-left: none;"> ba
+</td></tr>
+<tr>
+<td style="text-align: center;"> ac
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> c
+</td>
+<td> 0 </td>
+<td> 000
+</td>
+<td style="border-right: none;"> 7:
+</td>
+<td style="border-left: none;"> ac
+</td></tr>
+<tr>
+<td style="text-align: center;"> ca
+</td>
+<td style="text-align: center;"> c
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> 2 </td>
+<td> 010
+</td>
+<td style="border-right: none;"> 8:
+</td>
+<td style="border-left: none;"> ca
+</td></tr>
+<tr>
+<td style="text-align: center;"> ab
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> b
+</td>
+<td> - </td>
+<td> -
+</td>
+<td style="border-right: none;"> -
+</td>
+<td style="border-left: none;"> -
+</td></tr>
+<tr>
+<td style="text-align: center;"> aba
+</td>
+<td style="text-align: center;"> b
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> 5 </td>
+<td> 0101
+</td>
+<td style="border-right: none;"> 9:
+</td>
+<td style="border-left: none;"> aba
+</td></tr>
+<tr>
+<td style="text-align: center;"> ad
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> d
+</td>
+<td> 0 </td>
+<td> 0000
+</td>
+<td style="border-right: none;"> 10:
+</td>
+<td style="border-left: none;"> ad
+</td></tr>
+<tr>
+<td style="text-align: center;"> da
+</td>
+<td style="text-align: center;"> d
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> 3 </td>
+<td> 0011
+</td>
+<td style="border-right: none;"> 11:
+</td>
+<td style="border-left: none;"> da
+</td></tr>
+<tr>
+<td style="text-align: center;"> ab
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> b
+</td>
+<td> - </td>
+<td> -
+</td>
+<td style="border-right: none;"> -
+</td>
+<td style="border-left: none;"> -
+</td></tr>
+<tr>
+<td style="text-align: center;"> aba
+</td>
+<td style="text-align: center;"> b
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> - </td>
+<td> -
+</td>
+<td style="border-right: none;"> -
+</td>
+<td style="border-left: none;"> -
+</td></tr>
+<tr>
+<td style="text-align: center;"> abac
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> c
+</td>
+<td> 9 </td>
+<td> 1001
+</td>
+<td style="border-right: none;"> 12:
+</td>
+<td style="border-left: none;"> abac
+</td></tr>
+<tr>
+<td style="text-align: center;"> ca
+</td>
+<td style="text-align: center;"> c
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> - </td>
+<td> -
+</td>
+<td style="border-right: none;"> -
+</td>
+<td style="border-left: none;"> -
+</td></tr>
+<tr>
+<td style="text-align: center;"> cab
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> b
+</td>
+<td> 8 </td>
+<td> 1000
+</td>
+<td style="border-right: none;"> 13:
+</td>
+<td style="border-left: none;"> cab
+</td></tr>
+<tr>
+<td style="text-align: center;"> ba
+</td>
+<td style="text-align: center;"> b
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> - </td>
+<td> -
+</td>
+<td style="border-right: none;"> -
+</td>
+<td style="border-left: none;"> -
+</td></tr>
+<tr>
+<td style="text-align: center;"> bae
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> e
+</td>
+<td> 6 </td>
+<td> 0110
+</td>
+<td style="border-right: none;"> 14:
+</td>
+<td style="border-left: none;"> bae
+</td></tr>
+<tr>
+<td style="text-align: center;"> e
+</td>
+<td style="text-align: center;"> e
+</td>
+<td style="text-align: center;"> -
+</td>
+<td> 4 </td>
+<td> 0100
+</td>
+<td style="border-right: none;"> -
+</td>
+<td style="border-left: none;"> -
+</td></tr>
+</table>
+<p>Итак, мы получаем закодированное сообщение <span style='display:none'>[math]0 1 0 2 5 0 3 9 8 6 4[/math]</span> и его битовый эквивалент <span style='display:none'>[math]000 001 000 010 0101 0000 0011 1001 1000 0110 0100[/math]</span>. 
+Каждый символ исходного сообщения был закодирован группой из трех бит, сообщение содержало <span style='display:none'>[math]16[/math]</span> символов, следовательно длина сообщения составляла <span style='display:none'>[math]3 \cdot 16 = 48[/math]</span> бит.
+</p><p>Закодированное же сообщение так же сначала кодировалось трехбитными группами, а при появлении в словаре восьмого слова — четырехбитными, итого длина сообщения составила <span style='display:none'>[math]4 \cdot 3 + 7 \cdot 4 = 40[/math]</span> бит, что на <span style='display:none'>[math]8[/math]</span> бит короче исходного.
+</p>
+<h3><span class="mw-headline" id=".D0.94.D0.B5.D0.BA.D0.BE.D0.B4.D0.B8.D1.80.D0.BE.D0.B2.D0.B0.D0.BD.D0.B8.D0.B5_2">Декодирование</span></h3>
+<p>Особенность LZW заключается в том, что для декомпрессии нам не надо сохранять таблицу строк в файл для распаковки. Алгоритм построен таким образом, что мы в состоянии восстановить таблицу строк, пользуясь только потоком кодов. 
+</p><p>Теперь представим, что мы получили закодированное сообщение, приведённое выше, и нам нужно его декодировать. Прежде всего нам нужно знать начальный словарь, а последующие записи словаря мы можем реконструировать уже на ходу, поскольку они являются просто конкатенацией предыдущих записей. Кроме того, в процессе кодировании и декодировании коды в словарь добавляются во время обработки одного и того же символа, т.е. это происходит “синхронно”. 
+</p><p><br />
+</p>
+<table class="wikitable" border="1," style="text-align: center; margin-left: auto; margin-right: auto;">
+
+<tr bgcolor="#EEEEEE">
+<th colspan="2"> Данные
+</th>
+<th scope="col" width="6em" rowspan="2"> На выходе
+</th>
+<th colspan="4"> Новая запись
+</th></tr>
+<tr bgcolor="#EEEEEE">
+<th> Биты </th>
+<th> Код
+</th>
+<th scope="col" width="6em" colspan="2"> Полная
+</th>
+<th scope="col" width="6em" colspan="2"> Частичная
+</th></tr>
+<tr>
+<td> 000 </td>
+<td> 0
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="border-right: none;"> -
+</td>
+<td style="border-left: none;"> -
+</td>
+<td style="border-right: none;"> 5:
+</td>
+<td style="border-left: none;"> a?
+</td></tr>
+<tr>
+<td> 001 </td>
+<td> 1
+</td>
+<td style="text-align: center;"> b
+</td>
+<td style="border-right: none;"> 5:
+</td>
+<td style="border-left: none;"> ab
+</td>
+<td style="border-right: none;"> 6:
+</td>
+<td style="border-left: none;"> b?
+</td></tr>
+<tr>
+<td> 000 </td>
+<td> 0
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="border-right: none;"> 6:
+</td>
+<td style="border-left: none;"> ba
+</td>
+<td style="border-right: none;"> 7:
+</td>
+<td style="border-left: none;"> a?
+</td></tr>
+<tr>
+<td> 010 </td>
+<td> 2
+</td>
+<td style="text-align: center;"> c
+</td>
+<td style="border-right: none;"> 7:
+</td>
+<td style="border-left: none;"> ac
+</td>
+<td style="border-right: none;"> 8:
+</td>
+<td style="border-left: none;"> c?
+</td></tr>
+<tr>
+<td> 0101 </td>
+<td> 5
+</td>
+<td style="text-align: center;"> ab
+</td>
+<td style="border-right: none;"> 8:
+</td>
+<td style="border-left: none;"> ca
+</td>
+<td style="border-right: none;"> 9:
+</td>
+<td style="border-left: none;"> ab?
+</td></tr>
+<tr>
+<td> 0000 </td>
+<td> 0
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="border-right: none;"> 9:
+</td>
+<td style="border-left: none;"> aba
+</td>
+<td style="border-right: none;"> 10:
+</td>
+<td style="border-left: none;"> a?
+</td></tr>
+<tr>
+<td> 0011 </td>
+<td> 3
+</td>
+<td style="text-align: center;"> d
+</td>
+<td style="border-right: none;"> 10:
+</td>
+<td style="border-left: none;"> ad
+</td>
+<td style="border-right: none;"> 11:
+</td>
+<td style="border-left: none;"> d?
+</td></tr>
+<tr>
+<td> 1001 </td>
+<td> 9
+</td>
+<td style="text-align: center;"> aba
+</td>
+<td style="border-right: none;"> 11:
+</td>
+<td style="border-left: none;"> da
+</td>
+<td style="border-right: none;"> 12:
+</td>
+<td style="border-left: none;"> aba?
+</td></tr>
+<tr>
+<td> 1000 </td>
+<td> 8
+</td>
+<td style="text-align: center;"> ca
+</td>
+<td style="border-right: none;"> 12:
+</td>
+<td style="border-left: none;"> abac
+</td>
+<td style="border-right: none;"> 13:
+</td>
+<td style="border-left: none;"> ca?
+</td></tr>
+<tr>
+<td> 0110 </td>
+<td> 6
+</td>
+<td style="text-align: center;"> ba
+</td>
+<td style="border-right: none;"> 13:
+</td>
+<td style="border-left: none;"> cab
+</td>
+<td style="border-right: none;"> 14:
+</td>
+<td style="border-left: none;"> ba?
+</td></tr>
+<tr>
+<td> 0100 </td>
+<td> 4
+</td>
+<td style="text-align: center;"> e
+</td>
+<td style="border-right: none;"> 14:
+</td>
+<td style="border-left: none;"> bae
+</td>
+<td style="border-right: none;"> -
+</td>
+<td style="border-left: none;"> -
+</td></tr>
+</table>
+<h3><span class="mw-headline" id=".D0.9F.D1.80.D0.B8.D0.BC.D0.B5.D1.87.D0.B0.D0.BD.D0.B8.D0.B5">Примечание</span></h3>
+<p>Для повышения степени сжатия изображений данным методом часто используется одна “хитрость” реализации этого алгоритма. Некоторые файлы, подвергаемые сжатию с помощью LZW, имеют часто встречающиеся цепочки одинаковых символов, например <span style='display:none'>[math]aaaaaaaaaaaaa... [/math]</span> или <span style='display:none'>[math]303030[/math]</span> … и т. п. Их непосредственное сжатие будет генерировать выходной код <span style='display:none'>[math]005000600007...[/math]</span>. Спрашивается, можно ли в этом частном случае повысить степень сжатия?
+</p><p>Оказывается, это возможно, если оговорить некоторые действия:
+</p><p>Мы знаем, что для каждого кода надо добавлять в таблицу строку, состоящую из уже присутствующей там строки и символа, с которого начинается следующая строка в потоке.
+</p>
+<ul><li><b> </b> Пусть словарь состоит из слов&#160;: <span style='display:none'>[math]a, b, c, d, e[/math]</span>. Будем кодировать строку <span style='display:none'>[math] aaaaaaaaaa [/math]</span></li>
+<li><b> </b> Итак, кодировщик заносит первую <span style='display:none'>[math]a[/math]</span> в строку, ищет и находит <span style='display:none'>[math]a[/math]</span> в словаре под номером <span style='display:none'>[math]\langle0\rangle[/math]</span>. Добавляет в строку следующую <span style='display:none'>[math]a[/math]</span>, находит, что <span style='display:none'>[math]aa[/math]</span> нет в словаре. Тогда он добавляет запись <span style='display:none'>[math]\langle5\rangle[/math]</span>: <span style='display:none'>[math]aa[/math]</span> в словарь и выводит метку <span style='display:none'>[math]\langle0\rangle[/math]</span> (<span style='display:none'>[math]a[/math]</span>) в выходной поток. </li>
+<li><b> </b>Далее строка инициализируется второй <span style='display:none'>[math]a[/math]</span>, то есть принимает вид <span style='display:none'>[math]a?[/math]</span> вводится третья <span style='display:none'>[math]a[/math]</span>, строка вновь равна <span style='display:none'>[math]aa[/math]</span>, которая теперь имеется в словаре. </li>
+<li><b> </b>Если появляется четвертая <span style='display:none'>[math]a[/math]</span>, то строка <span style='display:none'>[math]aa?[/math]</span> равна <span style='display:none'>[math]aaa[/math]</span>, которой нет в словаре. Словарь пополняется этой строкой, а на выход идет метка <span style='display:none'>[math]\langle5\rangle[/math]</span> (<span style='display:none'>[math]aa[/math]</span>). </li>
+<li><b> </b>После этого строка инициализируется третьей <span style='display:none'>[math]a[/math]</span>, и т.д. и т.п. Дальнейший процесс вполне ясен. </li></ul>
+<div class="center"><div class="floatnone"><a href="/wiki/index.php?title=%D0%A4%D0%B0%D0%B9%D0%BB:LZW-img.jpg" class="image" title="Работа алгоритма LZW"><img alt="Работа алгоритма LZW" src="/wiki/images/4/49/LZW-img.jpg" width="485" height="124" /></a></div></div>
+<table class="wikitable" border="1," style="text-align: center; margin-left: auto; margin-right: auto;">
+
+<tr bgcolor="#EEEEEE">
+<th> Слово </th>
+<th> Номер в словаре
+</th></tr>
+<tr>
+<td> a </td>
+<td> <span style='display:none'>[math]\langle0\rangle[/math]</span>
+</td></tr>
+<tr>
+<td> b </td>
+<td> <span style='display:none'>[math]\langle1\rangle[/math]</span>
+</td></tr>
+<tr>
+<td> c </td>
+<td> <span style='display:none'>[math]\langle2\rangle[/math]</span>
+</td></tr>
+<tr>
+<td> d </td>
+<td> <span style='display:none'>[math]\langle3\rangle[/math]</span>
+</td></tr>
+<tr>
+<td> e </td>
+<td> <span style='display:none'>[math]\langle4\rangle[/math]</span>
+</td></tr></table>
+<table class="wikitable" border="1," style="text-align: center; margin-left: auto; margin-right: auto;">
+
+<tr bgcolor="#EEEEEE">
+<th scope="col" width="6em" rowspan="2"> Текущая строка
+</th>
+<th scope="col" width="6em" rowspan="2"> Текущий символ
+</th>
+<th scope="col" width="4em" rowspan="2"> Следующий символ
+</th>
+<th colspan="2"> Вывод
+</th>
+<th scope="col" width="7em" rowspan="2" colspan="2"> Словарь
+</th></tr>
+<tr bgcolor="#EEEEEE">
+<th>  Код  </th>
+<th> Биты
+</th></tr>
+<tr>
+<td style="text-align: center;"> aa
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> 0 </td>
+<td> 000
+</td>
+<td style="border-right: none;"> 5:
+</td>
+<td style="border-left: none;"> aa
+</td></tr>
+<tr>
+<td style="text-align: center;"> aa
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> - </td>
+<td> -
+</td>
+<td style="border-right: none;"> -
+</td>
+<td style="border-left: none;"> -
+</td></tr>
+<tr>
+<td style="text-align: center;"> aaa
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> 5 </td>
+<td> 101
+</td>
+<td style="border-right: none;"> 6:
+</td>
+<td style="border-left: none;"> aaa
+</td></tr>
+<tr>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> - </td>
+<td> -
+</td>
+<td style="border-right: none;"> -
+</td>
+<td style="border-left: none;"> -
+</td></tr>
+<tr>
+<td style="text-align: center;"> aa
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> - </td>
+<td> -
+</td>
+<td style="border-right: none;"> -
+</td>
+<td style="border-left: none;"> -
+</td></tr>
+<tr>
+<td style="text-align: center;"> aaa
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> - </td>
+<td> -
+</td>
+<td style="border-right: none;"> -
+</td>
+<td style="border-left: none;"> -
+</td></tr>
+<tr>
+<td style="text-align: center;"> aaaa
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> 6 </td>
+<td> 110
+</td>
+<td style="border-right: none;"> 7:
+</td>
+<td style="border-left: none;"> aaaa
+</td></tr>
+<tr>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> - </td>
+<td> -
+</td>
+<td style="border-right: none;"> -
+</td>
+<td style="border-left: none;"> -
+</td></tr>
+<tr>
+<td style="text-align: center;"> aa
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> - </td>
+<td> -
+</td>
+<td style="border-right: none;"> -
+</td>
+<td style="border-left: none;"> -
+</td></tr>
+<tr>
+<td style="text-align: center;"> aaa
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> - </td>
+<td> -
+</td>
+<td style="border-right: none;"> -
+</td>
+<td style="border-left: none;"> -
+</td></tr>
+<tr>
+<td style="text-align: center;"> aaaa
+</td>
+<td style="text-align: center;"> a
+</td>
+<td style="text-align: center;"> a
+</td>
+<td> 7 </td>
+<td> 111
+</td>
+<td style="border-right: none;"> 8:
+</td>
+<td style="border-left: none;"> aaaaa
+</td></tr></table>
+<p>В результате на выходе получаем последовательность <span style='display:none'>[math]0567[/math]</span>. При кодировании использовались только трехбитные группы. Длина закодированного сообщения составила <span style='display:none'>[math] 4 \cdot 3 = 12 [/math]</span> бит, что на <span style='display:none'>[math] 7 \cdot 3  - 12 = 9[/math]</span> бит короче кодирования стандартным методом LZW.
+Можно показать, что такая последовательность будет корректно восстановлена. Декодировщик сначала читает первый код – это <span style='display:none'>[math]\langle0\rangle[/math]</span>, которому соответствует символ <span style='display:none'>[math]a[/math]</span>. Затем читает код <span style='display:none'>[math]\langle5\rangle[/math]</span>, но этого кода в его таблице нет. Но мы уже знаем, что такая ситуация возможна только в том случае, когда добавляемый символ равен первому символу только что считанной последовательности, то есть <span style='display:none'>[math]a[/math]</span>. Поэтому он добавит в свою таблицу строку  <span style='display:none'>[math]aa[/math]</span> с кодом <span style='display:none'>[math]\langle5\rangle[/math]</span>, а в выходной поток поместит <span style='display:none'>[math]aa[/math]</span>. И так может быть раскодирована вся цепочка кодов.
+</p><p>Мало того, описанное выше правило кодирования мы можем применять в общем случае не только к подряд идущим одинаковым символам, но и к последовательностям, у которых очередной добавляемый символ равен первому символу цепочки.
+</p>
+<h3><span class="mw-headline" id=".D0.9F.D1.80.D0.B5.D0.B8.D0.BC.D1.83.D1.89.D0.B5.D1.81.D1.82.D0.B2.D0.B0_.D0.B0.D0.BB.D0.B3.D0.BE.D1.80.D0.B8.D1.82.D0.BC.D0.B0_LZW">Преимущества алгоритма LZW</span></h3>
+<ul><li> Алгоритм является однопроходным.</li></ul>
+<ul><li> Для декомпрессии не надо сохранять таблицу строк в файл для распаковки. Алгоритм построен таким образом, что мы в состоянии восстановить таблицу строк, пользуясь только потоком кодов.</li></ul>
+<h3><span class="mw-headline" id=".D0.9D.D0.B5.D0.B4.D0.BE.D1.81.D1.82.D0.B0.D1.82.D0.BA.D0.B8_.D0.B0.D0.BB.D0.B3.D0.BE.D1.80.D0.B8.D1.82.D0.BC.D0.B0_LZW">Недостатки алгоритма LZW</span></h3>
+<ul><li> Алгоритм не проводит анализ входных данных.</li></ul>
+<h2><span class="mw-headline" id=".D0.98.D1.81.D1.82.D0.BE.D1.87.D0.BD.D0.B8.D0.BA.D0.B8_.D0.B8.D0.BD.D1.84.D0.BE.D1.80.D0.BC.D0.B0.D1.86.D0.B8.D0.B8">Источники информации</span></h2>
+<ul><li> <a rel="nofollow" class="external text" href="http://ru.wikipedia.org/wiki/%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_%D0%9B%D0%B5%D0%BC%D0%BF%D0%B5%D0%BB%D1%8F_%E2%80%94_%D0%97%D0%B8%D0%B2%D0%B0_%E2%80%94_%D0%92%D0%B5%D0%BB%D1%87%D0%B0">Википедия — Алгоритм Лемпеля — Зива — Велча</a></li></ul>
+<ul><li> <a rel="nofollow" class="external text" href="http://en.wikipedia.org/wiki/Lempel%E2%80%93Ziv%E2%80%93Welch">Wikipedia — Lempel — Ziv — Welch</a></li></ul>
+<ul><li> <a rel="nofollow" class="external text" href="http://compression.ru/download/articles/rev_univ/semenyuk_2001_econom_encoding.pdf">Семенюк В.В. — Экономное кодирование дискретной информации</a></li></ul>
+<ul><li> <a rel="nofollow" class="external text" href="http://algolist.manual.ru/compress/standard/lzw.php">Метод LZW — сжатия данных — алгоритмы и методы</a></li></ul>
+<ul><li> <a rel="nofollow" class="external text" href="http://www.compression-pointers.ru/category_42.html">Алгоритмы сжатия и компрессии</a></li></ul>
+<ul><li> <a rel="nofollow" class="external text" href="http://www.algoritmy.info/picture5.html">Алгоритм LZW — Понятие алгоритма</a></li></ul>
+
+<!-- 
+NewPP limit report
+Cached time: 20250313085659
+Cache expiry: 86400
+Dynamic content: false
+CPU time usage: 0.024 seconds
+Real time usage: 0.025 seconds
+Preprocessor visited node count: 1294/1000000
+Preprocessor generated node count: 2888/1000000
+Post‐expand include size: 42/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/40
+Expensive parser function count: 0/100
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    6.510      1 -total
+ 24.11%    1.570     14 Шаблон:---
+-->
+</div>
+<!-- Saved in parser cache with key wikidb:pcache:idhash:567-0!canonical and timestamp 20250313085659 and revision id 84779
+ -->
+</div>					<div class="printfooter">
+						Источник — «<a dir="ltr" href="http://neerc.ifmo.ru/wiki/index.php?title=Алгоритм_LZW&amp;oldid=84779">http://neerc.ifmo.ru/wiki/index.php?title=Алгоритм_LZW&amp;oldid=84779</a>»					</div>
+				<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="/wiki/index.php?title=%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%9A%D0%B0%D1%82%D0%B5%D0%B3%D0%BE%D1%80%D0%B8%D0%B8" title="Служебная:Категории">Категории</a>: <ul><li><a href="/wiki/index.php?title=%D0%9A%D0%B0%D1%82%D0%B5%D0%B3%D0%BE%D1%80%D0%B8%D1%8F:%D0%94%D0%B8%D1%81%D0%BA%D1%80%D0%B5%D1%82%D0%BD%D0%B0%D1%8F_%D0%BC%D0%B0%D1%82%D0%B5%D0%BC%D0%B0%D1%82%D0%B8%D0%BA%D0%B0_%D0%B8_%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC%D1%8B" title="Категория:Дискретная математика и алгоритмы">Дискретная математика и алгоритмы</a></li><li><a href="/wiki/index.php?title=%D0%9A%D0%B0%D1%82%D0%B5%D0%B3%D0%BE%D1%80%D0%B8%D1%8F:%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC%D1%8B_%D1%81%D0%B6%D0%B0%D1%82%D0%B8%D1%8F" title="Категория:Алгоритмы сжатия">Алгоритмы сжатия</a></li></ul></div></div>				<div class="visualClear"></div>
+							</div>
+		</div>
+		<div id="mw-navigation">
+			<h2>Навигация</h2>
+
+			<div id="mw-head">
+									<div id="p-personal" role="navigation" class="" aria-labelledby="p-personal-label">
+						<h3 id="p-personal-label">Персональные инструменты</h3>
+						<ul>
+							<li id="pt-createaccount"><a href="/wiki/index.php?title=%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D1%82%D1%8C_%D1%83%D1%87%D1%91%D1%82%D0%BD%D1%83%D1%8E_%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D1%8C&amp;returnto=%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC+LZW" title="Мы предлагаем вам создать учётную запись и войти в систему, хотя это и не обязательно.">Создать учётную запись</a></li><li id="pt-login"><a href="/wiki/index.php?title=%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%92%D1%85%D0%BE%D0%B4&amp;returnto=%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC+LZW" title="Здесь можно зарегистрироваться в системе, но это необязательно. [o]" accesskey="o">Войти</a></li>						</ul>
+					</div>
+									<div id="left-navigation">
+										<div id="p-namespaces" role="navigation" class="vectorTabs" aria-labelledby="p-namespaces-label">
+						<h3 id="p-namespaces-label">Пространства имён</h3>
+						<ul>
+														<li id="ca-nstab-main" class="selected"><span><a href="/wiki/index.php?title=%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_LZW" title="Просмотр основной страницы [c]" accesskey="c">Статья</a></span></li>
+							<li id="ca-talk"><span><a href="/wiki/index.php?title=%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5:%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_LZW" rel="discussion" title="Обсуждение основной страницы [t]" accesskey="t">Обсуждение</a></span></li>
+						</ul>
+					</div>
+										<div id="p-variants" role="navigation" class="vectorMenu emptyPortlet" aria-labelledby="p-variants-label">
+												<h3 id="p-variants-label">
+							<span>Варианты</span>
+						</h3>
+
+						<div class="menu">
+							<ul>
+															</ul>
+						</div>
+					</div>
+									</div>
+				<div id="right-navigation">
+										<div id="p-views" role="navigation" class="vectorTabs" aria-labelledby="p-views-label">
+						<h3 id="p-views-label">Просмотры</h3>
+						<ul>
+														<li id="ca-view" class="selected"><span><a href="/wiki/index.php?title=%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_LZW">Читать</a></span></li>
+							<li id="ca-viewsource"><span><a href="/wiki/index.php?title=%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_LZW&amp;action=edit" title="Эта страница защищена от изменений, но вы можете посмотреть и скопировать её исходный текст [e]" accesskey="e">Просмотр вики-текста</a></span></li>
+							<li id="ca-history" class="collapsible"><span><a href="/wiki/index.php?title=%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_LZW&amp;action=history" title="Журнал изменений страницы [h]" accesskey="h">История</a></span></li>
+						</ul>
+					</div>
+										<div id="p-cactions" role="navigation" class="vectorMenu emptyPortlet" aria-labelledby="p-cactions-label">
+						<h3 id="p-cactions-label"><span>Ещё</span></h3>
+
+						<div class="menu">
+							<ul>
+															</ul>
+						</div>
+					</div>
+										<div id="p-search" role="search">
+						<h3>
+							<label for="searchInput">Поиск</label>
+						</h3>
+
+						<form action="/wiki/index.php" id="searchform">
+							<div id="simpleSearch">
+							<input type="search" name="search" placeholder="Искать в Викиконспекты" title="Искать в Викиконспекты [f]" accesskey="f" id="searchInput"/><input type="hidden" value="Служебная:Поиск" name="title"/><input type="submit" name="fulltext" value="Найти" title="Найти страницы, содержащие указанный текст" id="mw-searchButton" class="searchButton mw-fallbackSearchButton"/><input type="submit" name="go" value="Перейти" title="Перейти к странице, имеющей в точности такое название" id="searchButton" class="searchButton"/>							</div>
+						</form>
+					</div>
+									</div>
+			</div>
+			<div id="mw-panel">
+				<div id="p-logo" role="banner"><a class="mw-wiki-logo" href="/wiki/index.php?title=%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0"  title="Перейти на заглавную страницу"></a></div>
+						<div class="portal" role="navigation" id='p-navigation' aria-labelledby='p-navigation-label'>
+			<h3 id='p-navigation-label'>Навигация</h3>
+
+			<div class="body">
+									<ul>
+						<li id="n-mainpage-description"><a href="/wiki/index.php?title=%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0" title="Перейти на заглавную страницу [z]" accesskey="z">Заглавная страница</a></li><li id="n-recentchanges"><a href="/wiki/index.php?title=%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%A1%D0%B2%D0%B5%D0%B6%D0%B8%D0%B5_%D0%BF%D1%80%D0%B0%D0%B2%D0%BA%D0%B8" title="Список последних изменений [r]" accesskey="r">Свежие правки</a></li><li id="n-randompage"><a href="/wiki/index.php?title=%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%A1%D0%BB%D1%83%D1%87%D0%B0%D0%B9%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0" title="Посмотреть случайно выбранную страницу [x]" accesskey="x">Случайная статья</a></li><li id="n-help"><a href="https://www.mediawiki.org/wiki/Special:MyLanguage/Help:Contents" title="Место, где можно получить справку">Справка</a></li>					</ul>
+							</div>
+		</div>
+			<div class="portal" role="navigation" id='p-tb' aria-labelledby='p-tb-label'>
+			<h3 id='p-tb-label'>Инструменты</h3>
+
+			<div class="body">
+									<ul>
+						<li id="t-whatlinkshere"><a href="/wiki/index.php?title=%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%A1%D1%81%D1%8B%D0%BB%D0%BA%D0%B8_%D1%81%D1%8E%D0%B4%D0%B0/%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_LZW" title="Список всех страниц, ссылающихся на данную [j]" accesskey="j">Ссылки сюда</a></li><li id="t-recentchangeslinked"><a href="/wiki/index.php?title=%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%A1%D0%B2%D1%8F%D0%B7%D0%B0%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BF%D1%80%D0%B0%D0%B2%D0%BA%D0%B8/%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_LZW" rel="nofollow" title="Последние изменения в страницах, на которые ссылается эта страница [k]" accesskey="k">Связанные правки</a></li><li id="t-specialpages"><a href="/wiki/index.php?title=%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%A1%D0%BF%D0%B5%D1%86%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D1%8B" title="Список служебных страниц [q]" accesskey="q">Спецстраницы</a></li><li id="t-print"><a href="/wiki/index.php?title=%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_LZW&amp;printable=yes" rel="alternate" title="Версия этой страницы для печати [p]" accesskey="p">Версия для печати</a></li><li id="t-permalink"><a href="/wiki/index.php?title=%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_LZW&amp;oldid=84779" title="Постоянная ссылка на эту версию страницы">Постоянная ссылка</a></li><li id="t-info"><a href="/wiki/index.php?title=%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_LZW&amp;action=info" title="Подробнее об этой странице">Сведения о странице</a></li>					</ul>
+							</div>
+		</div>
+				</div>
+		</div>
+		<div id="footer" role="contentinfo">
+							<ul id="footer-info">
+											<li id="footer-info-lastmod"> Эта страница последний раз была отредактирована 4 сентября 2022 в 19:17.</li>
+									</ul>
+							<ul id="footer-places">
+											<li id="footer-places-privacy"><a href="/wiki/index.php?title=%D0%92%D0%B8%D0%BA%D0%B8%D0%BA%D0%BE%D0%BD%D1%81%D0%BF%D0%B5%D0%BA%D1%82%D1%8B:%D0%9F%D0%BE%D0%BB%D0%B8%D1%82%D0%B8%D0%BA%D0%B0_%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B4%D0%B5%D0%BD%D1%86%D0%B8%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D1%81%D1%82%D0%B8" title="Викиконспекты:Политика конфиденциальности">Политика конфиденциальности</a></li>
+											<li id="footer-places-about"><a href="/wiki/index.php?title=%D0%92%D0%B8%D0%BA%D0%B8%D0%BA%D0%BE%D0%BD%D1%81%D0%BF%D0%B5%D0%BA%D1%82%D1%8B:%D0%9E%D0%BF%D0%B8%D1%81%D0%B0%D0%BD%D0%B8%D0%B5" title="Викиконспекты:Описание">О Викиконспекты</a></li>
+											<li id="footer-places-disclaimer"><a href="/wiki/index.php?title=%D0%92%D0%B8%D0%BA%D0%B8%D0%BA%D0%BE%D0%BD%D1%81%D0%BF%D0%B5%D0%BA%D1%82%D1%8B:%D0%9E%D1%82%D0%BA%D0%B0%D0%B7_%D0%BE%D1%82_%D0%BE%D1%82%D0%B2%D0%B5%D1%82%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D0%BE%D1%81%D1%82%D0%B8" title="Викиконспекты:Отказ от ответственности">Отказ от ответственности</a></li>
+											<li id="footer-places-mobileview"><a href="http://neerc.ifmo.ru/wiki/index.php?title=%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_LZW&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Мобильная версия</a></li>
+									</ul>
+										<ul id="footer-icons" class="noprint">
+											<li id="footer-poweredbyico">
+							<a href="//www.mediawiki.org/"><img src="/wiki/resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="/wiki/resources/assets/poweredby_mediawiki_132x47.png 1.5x, /wiki/resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31"/></a>						</li>
+									</ul>
+						<div style="clear:both"></div>
+		</div>
+		<script>(window.RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.024","walltime":"0.025","ppvisitednodes":{"value":1294,"limit":1000000},"ppgeneratednodes":{"value":2888,"limit":1000000},"postexpandincludesize":{"value":42,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":40},"expensivefunctioncount":{"value":0,"limit":100},"timingprofile":["100.00%    6.510      1 -total"," 24.11%    1.570     14 Шаблон:---"]},"cachereport":{"timestamp":"20250313085659","ttl":86400,"transientcontent":false}}});});</script><script>(window.RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgBackendResponseTime":447});});</script>
+	</body>
+</html>
